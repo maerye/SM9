@@ -85,6 +85,10 @@ public class Sm9test {
 
         signer.initVerify(id);
         assertTrue (signer.verifySignature(testString.getBytes(),signature));
+
+        String x="dsad";
+        byte []xs=x.getBytes();
+        assertEquals(x,new String(xs));
     }
     @Test
     public void testEncapsulate ()throws Exception
@@ -104,11 +108,11 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,0);
+        sm9Engine.initEncrypt(true,id,16,32,1);
         byte [] m="0123456789abcdeffedcba9876543210".getBytes();
         byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
         byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
         System.out.println(Arrays.toString(mp));
         assertArrayEquals(m,mp);

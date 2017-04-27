@@ -35,7 +35,7 @@ public class KEM {
             do {
                 r = new BigInteger(N.bitLength(), new SecureRandom());
 
-            } while (r.compareTo(N) >= 0);
+            } while (r.compareTo(N) >= 0||r.compareTo(BigInteger.ONE)<0);
 
             c=new Ec1(qb);
             c.mul(new Mpz(r.toString(10)));

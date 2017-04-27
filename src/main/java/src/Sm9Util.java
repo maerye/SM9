@@ -178,6 +178,7 @@ public class Sm9Util {
                 for (int i = 0; i < 32 - in.toByteArray().length; i++) {
                     tmpd[i] = 0;
                 }
+
                 System.arraycopy(in.toByteArray(), 0, tmpd, 32 - in.toByteArray().length, in.toByteArray().length);
             }
             return tmpd;

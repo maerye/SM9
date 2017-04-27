@@ -20,6 +20,10 @@ public class BN254Test {
     public  void hello() {
         try {
 
+            BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
+            BigInteger fuone=new BigInteger("-1",10);
+            BigInteger mods=fuone.mod(p);
+            System.out.println(mods.toString(16));
 
             aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
             Fp ab = new Fp("4168783608814932154536427934509895782246573715297911553964171371032945126671");
@@ -27,18 +31,20 @@ public class BN254Test {
             Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
             Ec1 g1 = new Ec1(new Fp(-1), new Fp(1));
             Ec2 g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
-            System.out.println("g1y=" + g1.getY());
+            System.out.println("g1=" + g1);
             System.out.println("g2=" + g2);
             System.out.println("aa=" + g2.getX().getA().toString());
             System.out.println("ab=" + ab.toString());
-
+            Ec1 h=new Ec1();
+            h.set("0x2523648240000001ba344d80000000086121000000000013a700000000000012_0x1");
+            System.out.println("h=" + h);
             assertBool("g1 is on EC", g1.isValid());
             assertBool("g2 is on twist EC", g2.isValid());
             Mpz r = BN254.GetParamR();
 
             System.out.println("r=" + r);
             System.out.println("r="+new BigInteger(r.toString(),10).toString(10));
-            BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
+           // BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
             System.out.println("p ="+ p.toString(2).length());
             System.out.println("g2:"+g2.toString());
             double temp=Math.log(new BigInteger(r.toString()).doubleValue())/Math.log(2);
