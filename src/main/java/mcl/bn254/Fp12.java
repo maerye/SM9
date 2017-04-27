@@ -58,8 +58,10 @@ public class Fp12 {
   }
 
   public String toString() {
+
     return BN254JNI.Fp12_toString(swigCPtr, this);
   }
+
 
   public boolean equals(Fp12 rhs) {
     return BN254JNI.Fp12_equals(swigCPtr, this, Fp12.getCPtr(rhs), rhs);

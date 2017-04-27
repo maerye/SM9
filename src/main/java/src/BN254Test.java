@@ -1,27 +1,54 @@
+package src;
+
 import java.io.*;
+import java.lang.reflect.Array;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.regex.Pattern;
+
 import mcl.bn254.*;
+import org.junit.Test;
 
 public class BN254Test {
+    private Fp aa;
+
     static {
         System.loadLibrary("bn254_if_wrap");
+        BN254.SystemInit();
     }
-    public static void main(String argv[]) {
+    @Test
+    public  void hello() {
         try {
-            BN254.SystemInit();
 
-            Fp aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
+
+            aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
             Fp ab = new Fp("4168783608814932154536427934509895782246573715297911553964171371032945126671");
             Fp ba = new Fp("13891744915211034074451795021214165905772212241412891944830863846330766296736");
             Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
             Ec1 g1 = new Ec1(new Fp(-1), new Fp(1));
             Ec2 g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
-            System.out.println("g1=" + g1);
+            System.out.println("g1y=" + g1.getY());
             System.out.println("g2=" + g2);
+            System.out.println("aa=" + g2.getX().getA().toString());
+            System.out.println("ab=" + ab.toString());
+
             assertBool("g1 is on EC", g1.isValid());
             assertBool("g2 is on twist EC", g2.isValid());
             Mpz r = BN254.GetParamR();
-            System.out.println("r=" + r);
 
+            System.out.println("r=" + r);
+            System.out.println("r="+new BigInteger(r.toString(),10).toString(10));
+            BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
+            System.out.println("p ="+ p.toString(2).length());
+            System.out.println("g2:"+g2.toString());
+            double temp=Math.log(new BigInteger(r.toString()).doubleValue())/Math.log(2);
+            double hlen=Math.ceil(5*temp/32)*8;
+            Fp2 tt =new Fp2(aa,ab);
+            System.out.println("a:"+tt.getA());
+            System.out.println("Fp12 1 : "+new Fp12(1));
+            //System.out.println("log:"+Math.log(new BigInteger(r.toString()).doubleValue())/Math.log(2));
+            //Fp12 gg=new Fp12()
+            System.out.println("hlen/v: "+String.valueOf(hlen/(32*8)));
             {
                 Ec1 t = new Ec1(g1);
                 t.mul(r);
@@ -46,9 +73,23 @@ public class BN254Test {
                 assertEqual("check g1 * c = g1 * a + g1 * b", Pc, out);
             }
             Fp12 e = new Fp12();
+            e.set(e.toString());
+
             // calc e : G2 x G1 -> G3 pairing
             e.pairing(g2, g1); // e = e(g2, g1)
             System.out.println("e=" + e);
+            String [] estring =e.toString().split(",");
+            String charTodel="[]\n ";
+            String pat="["+ Pattern.quote(charTodel)+"]";
+
+            for(int i=0;i<estring.length;i++)
+            {
+                estring[i]=estring[i].replaceAll(pat,"");
+                BigInteger ei=new BigInteger(estring[i],10);
+                System.out.println("estring "+ i+":"+ei.toString(16));
+                System.out.println("ei"+Arrays.toString(ei.toByteArray()));
+            }
+
             {
                 Fp12 t = new Fp12(e);
                 t.power(r);
