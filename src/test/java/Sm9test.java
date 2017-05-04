@@ -101,6 +101,8 @@ public class Sm9test {
 
         System.out.println("encapulated :"+ Arrays.toString(encapsulatedKey.getK()));
         System.out.println("decapulate: "+Arrays.toString(k));
+
+        assertArrayEquals(encapsulatedKey.getK(),k);
     }
     @Test
     public void testEncrypt()throws Exception{
@@ -108,11 +110,11 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,1);
+        sm9Engine.initEncrypt(true,id,16,32,0);
         byte [] m="0123456789abcdeffedcba9876543210".getBytes();
         byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
         byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
         System.out.println(Arrays.toString(mp));
         assertArrayEquals(m,mp);

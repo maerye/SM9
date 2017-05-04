@@ -1,12 +1,10 @@
 package src;
 
-import mcl.bn254.Ec1;
-import mcl.bn254.Ec2;
-import mcl.bn254.Fp12;
-import mcl.bn254.Mpz;
+import mcl.bn254.*;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Arrays;
 
 /**
  * Created by mzy on 2017/4/24.
@@ -39,16 +37,27 @@ public class KEM {
 
             c=new Ec1(qb);
             c.mul(new Mpz(r.toString(10)));
+            System.out.println("c1:"+c.toString());
+            System.out.println("c1x:"+c.getX().toString());
+            System.out.println("c1y:"+c.getY().toString());
+            Ec1 temp=new Ec1();
+            temp.set(new Fp(c.getX().toString()),new Fp(c.getY().toString()));
+            boolean b=c.equals(temp);
+
             byte[]cb=Sm9Util.ec1ToBytes(c);
             Fp12 g=new Fp12();
             g.pairing(g2,ppube);
             Fp12 w=new Fp12(g);
             w.power(new Mpz(r.toString(10)));
             byte [] wb=Sm9Util.Fp12ToBytes(w);
+            System.out.println("c1:"+ Arrays.toString(cb));
+            System.out.println("wb1:"+ Arrays.toString(wb));
             byte [] merge1=Sm9Util.byteMerger(cb,wb);
             byte [] merge2=Sm9Util.byteMerger(merge1,id);
+            System.out.println("merge1:"+ Arrays.toString(merge2));
             k=Sm9Util.KDF(merge2,klen);
         }while (testZeros(k));
+
 
         return new EncapsulatedKey(k,c);
 
@@ -58,12 +67,20 @@ public class KEM {
         {
             throw new Exception("invalid content");
         }
+        Ec1 ec1=new Ec1(c);
         Fp12 w=new Fp12();
-        w.pairing(de.getDe(),c);
+        w.pairing(de.getDe(),ec1);
         byte [] wb=Sm9Util.Fp12ToBytes(w);
-        byte [] cb=Sm9Util.ec1ToBytes(c);
+        System.out.println("wb2:"+ Arrays.toString(wb));
+       /* System.out.println("c2:"+ec1.toString());
+        System.out.println("c2x:"+ec1.getX().toString());
+        System.out.println("c2y:"+ec1.getY().toString());
+*/
+        byte [] cb=Sm9Util.ec1ToBytes(ec1);
+        System.out.println("c2b:"+ Arrays.toString(cb));
         byte [] merge1=Sm9Util.byteMerger(cb,wb);
         byte [] merge2=Sm9Util.byteMerger(merge1,id);
+        System.out.println("merge2:"+ Arrays.toString(merge2));
         byte [] k=Sm9Util.KDF(merge2,klen);
         if(testZeros(k))
         {

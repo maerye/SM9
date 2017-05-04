@@ -11,7 +11,7 @@ public class EncapsulatedKey {
 
     public EncapsulatedKey(byte[] k, Ec1 c) {
         this.k = k;
-        this.c = c;
+        this.c = new Ec1(c);
     }
 
     public byte[] getK() {
