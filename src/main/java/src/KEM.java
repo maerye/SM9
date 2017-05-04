@@ -72,10 +72,7 @@ public class KEM {
         w.pairing(de.getDe(),ec1);
         byte [] wb=Sm9Util.Fp12ToBytes(w);
         System.out.println("wb2:"+ Arrays.toString(wb));
-       /* System.out.println("c2:"+ec1.toString());
-        System.out.println("c2x:"+ec1.getX().toString());
-        System.out.println("c2y:"+ec1.getY().toString());
-*/
+
         byte [] cb=Sm9Util.ec1ToBytes(ec1);
         System.out.println("c2b:"+ Arrays.toString(cb));
         byte [] merge1=Sm9Util.byteMerger(cb,wb);

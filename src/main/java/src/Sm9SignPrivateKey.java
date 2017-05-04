@@ -1,13 +1,11 @@
 package src;
 
 import mcl.bn254.Ec1;
-import mcl.bn254.Ec2;
-import org.bouncycastle.math.myec.bncurves.BNPoint;
 
 /**
  * Created by mzy on 2017/4/17.
  */
-public class Sm9SignPrivateKey extends Sm9Key{
+public class Sm9SignPrivateKey {
 
 
     private Ec1 ds;
