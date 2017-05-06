@@ -17,7 +17,6 @@ public class BN254Test {
     @Test
     public  void hello() {
         try {
-
             BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
             BigInteger fuone=new BigInteger("-1",10);
             BigInteger mods=fuone.mod(p);

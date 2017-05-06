@@ -1,3 +1,7 @@
+import it.unisa.dia.gas.jpbc.*;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
+import it.unisa.dia.gas.plaf.jpbc.pairing.f.TypeFCurveGenerator;
+
 import mcl.bn254.Ec1;
 import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
@@ -110,11 +114,11 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,0);
+        sm9Engine.initEncrypt(true,id,16,32,1);
         byte [] m="0123456789abcdeffedcba9876543210".getBytes();
         byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
         byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
         System.out.println(Arrays.toString(mp));
         assertArrayEquals(m,mp);
@@ -178,7 +182,7 @@ public class Sm9test {
         BigInteger cy=new BigInteger("1C9B4C435ECA35AB83BB734174C0F78FDE81A53374AFF3B3602BBC5E37BE9A4C",16);
         Ec1  c = new Ec1(new Fp(cx.toString(10)),new Fp(cy.toString(10)));*/
         kgc=KeyGenerationCenter.getInstance();
-       Ec1 c=new Ec1(kgc.getG1());
+        Ec1 c=new Ec1(kgc.getG1());
         byte [] cb=Sm9Util.ec1ToBytes(c);
         System.out.println(new BigInteger(cb).toString(16));
 
@@ -186,7 +190,7 @@ public class Sm9test {
     }
     @Test
     public void testlibrary(){
-        /*BNPoint g1=sm9Curve.getG();
+        BNPoint g1=sm9Curve.getG();
         BNPoint2 g2=sm9Curve2.getGt();
         assertBool("g1 is on ec",sm9Curve.getBnCurve().contains(g1));
         assertBool("g2 is on ec",sm9Curve2.getBNCurve2().contains(g2));
@@ -232,7 +236,7 @@ public class Sm9test {
         BNField12 g2q1=pairing.ate(g2,q1);
         BNField12 g2q2=pairing.ate(g2,q2);
 
-        assertEqual("e = e1*e2",g2q2,e.multiply(g2q1));*/
+        assertEqual("e = e1*e2",g2q2,e.multiply(g2q1));
 
         BigInteger a0 ,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,p,sm9q;
         a0 =new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
@@ -271,6 +275,21 @@ public class Sm9test {
        byte[] ngbytes= Sm9Util.Fp12ToBytes(ng);
     }
 
+    @Test
+    public void testJpbc(){
+        int rBits=256;
+        PairingParametersGenerator pairingParametersGenerator=new TypeFCurveGenerator(rBits);
+        PairingParameters parameters=pairingParametersGenerator.generate();
+
+        System.out.println(parameters.toString());
+        Pairing pairing = PairingFactory.getPairing(parameters);
+        Element in1=pairing.getG1().newRandomElement();
+        Element in2=pairing.getG2().newRandomElement();
+        Element out=pairing.pairing(in1,in2);
+        Field outfd=out.getField();
+
+        System.out.println(out.toBytes());
+    }
     public static void assertBool(String msg, Boolean b) {
         if (b) {
             System.out.println("OK : " + msg);

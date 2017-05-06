@@ -1,5 +1,11 @@
 package src;
 
+import it.unisa.dia.gas.jpbc.Field;
+import it.unisa.dia.gas.jpbc.Pairing;
+import it.unisa.dia.gas.jpbc.PairingParameters;
+import it.unisa.dia.gas.jpbc.PairingParametersGenerator;
+import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
+import it.unisa.dia.gas.plaf.jpbc.pairing.f.TypeFCurveGenerator;
 import mcl.bn254.*;
 
 
@@ -11,28 +17,30 @@ import java.security.SecureRandom;
  */
 public class KeyGenerationCenter {
 
-    static {
-        System.loadLibrary("bn254_if_wrap");
-        BN254.SystemInit();
-    }
+//    static {
+//        System.loadLibrary("bn254_if_wrap");
+//        BN254.SystemInit();
+//    }
+    private static int rBits =256;
 
     private BigInteger ks; //master sign private key
     private BigInteger ke;//master encrypt private key
-   // public BNPoint2 ppubs; //master public key
-    public Ec2 ppubs; //master sign public key
+    //public Ec2 ppubs; //master sign public key
     public Ec1 ppube; //master encrypt public key
 
     public byte hid=0x01;
     public byte hid2=0x02;
 
-  //  private Sm9Curve sm9Curve;
-   // private Sm9Curve2 sm9Curve2;
-    public Ec1 g1;
-    public Ec2 g2;
+//    public Ec1 g1;
+//    public Ec2 g2;
+    private Field g1;
+    private Field g2;
+
     private SecureRandom random;
     private SecureRandom random2;
 
     private BigInteger N; // the order
+
     private static KeyGenerationCenter THIS;
 
     public void init()
@@ -42,18 +50,21 @@ public class KeyGenerationCenter {
     public KeyGenerationCenter(){
 
 
-        Fp aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
-        Fp ab = new Fp("4168783608814932154536427934509895782246573715297911553964171371032945126671");
-        Fp ba = new Fp("13891744915211034074451795021214165905772212241412891944830863846330766296736");
-        Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
-        g1 = new Ec1(new Fp(-1), new Fp(1));
-        g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
+//        Fp aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
+//        Fp ab = new Fp("4168783608814932154536427934509895782246573715297911553964171371032945126671");
+//        Fp ba = new Fp("13891744915211034074451795021214165905772212241412891944830863846330766296736");
+//        Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
+//        g1 = new Ec1(new Fp(-1), new Fp(1));
+//        g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
 
-       // sm9Curve=Sm9Curve.getInstance();
-        //sm9Curve2=new Sm9Curve2(sm9Curve);
-        Mpz r=BN254.GetParamR();
-        this.N=new BigInteger(r.toString(),10);
-        //this.N=sm9Curve.getN();
+        PairingParametersGenerator pairingParametersGenerator=new TypeFCurveGenerator(rBits);
+        PairingParameters parameters=pairingParametersGenerator.generate();
+        Pairing pairing = PairingFactory.getPairing(parameters);
+        g1=pairing.getG1();
+        g2=pairing.getG2();
+
+//        Mpz r=BN254.GetParamR();
+//        this.N=new BigInteger(r.toString(),10);
 
         this.random=new SecureRandom();
         this.random2=new SecureRandom();
@@ -75,11 +86,11 @@ public class KeyGenerationCenter {
         this.ks = temp;
         this.ke =temp2;
 
-        Ec2 ec2ppubs=new Ec2(g2);
-        Mpz ksmpz=new Mpz(ks.toString(10));
-        ec2ppubs.mul(ksmpz);
-        this.ppubs=new Ec2(ec2ppubs);
-
+//        Ec2 ec2ppubs=new Ec2(g2);
+//        Mpz ksmpz=new Mpz(ks.toString(10));
+//        ec2ppubs.mul(ksmpz);
+//        this.ppubs=new Ec2(ec2ppubs);
+        
         Ec1 ec1ppube=new Ec1(g1);
         ec1ppube.mul(new Mpz(ke.toString(10)));
         this.ppube=ec1ppube;
@@ -111,7 +122,6 @@ public class KeyGenerationCenter {
         }
         BigInteger t2 = ks.multiply(t1.modInverse(N)).mod(N);
 
-       // BNPoint ds = sm9Curve.getBnCurve().kG(t2);
         Ec1 ds =new Ec1(g1);
         Mpz t2mpz=new Mpz(t2.toString(10));
         ds.mul(t2mpz);

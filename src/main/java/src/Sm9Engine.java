@@ -144,11 +144,6 @@ public class Sm9Engine {
         Fp tecy=tempc.getY();
         System.out.println(tecx);
         System.out.println(tecy);
-        // Thread.sleep(5000);
-      /*      Ec1 temp=new Ec1();
-            temp.set(tecx,tecy);
-
-            boolean b=temp.equals(c1);*/
         byte[] c3=Sm9Util.MAC(k2,c2);
         //BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
 
@@ -185,18 +180,11 @@ public class Sm9Engine {
         DEROctetString c2_encoded = (DEROctetString) asn1Obj.getObjectAt(3);
         DEROctetString c3_encoded = (DEROctetString) asn1Obj.getObjectAt(2);
         DEROctetString c1t=(DEROctetString)asn1Obj.getObjectAt(4);
-        BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
 
         BigInteger x=c1x_encoded.getPositiveValue();
         BigInteger y=c1y_encoded.getPositiveValue();
-      //  Ec1 temp=new Ec1(new Fp(x.toString(10)),new Fp(y.toString(10)));
 
 
-        String x1s=x.mod(p).toString(16);
-        String y1s=y.mod(p).toString(16);
-
-        String x1ss=x.toString(16);
-        String y1ss=y.toString(16);
 
         byte[] c2 = c2_encoded.getOctets();
         byte[] c3 = c3_encoded.getOctets();
@@ -206,19 +194,9 @@ public class Sm9Engine {
         String p1=sp[0];
         String p2=sp[1];
 
-        BigInteger p1B=new BigInteger(p1.replaceAll("0x",""),16);
-        BigInteger p2B=new BigInteger(p2.replaceAll("0x",""),16);
 
-        BigInteger [] temp1=x.divideAndRemainder(p1B);
-        BigInteger [] temp2=y.divideAndRemainder(p2B);
         Ec1 c1p =new Ec1();
         c1p.set(c1string);
-
-      //  boolean test=temp.equals(c1p);
-
-        // byte [] c1b2=Sm9Util.ec1ToBytes(c1p);
-        String c1pxxx=c1p.getX().toString();
-        String c1pyyy=c1p.getY().toString();
 
         byte[] xb=Sm9Util.bigIntegerTobytes(x);
         byte[] yb=Sm9Util.bigIntegerTobytes(y);
