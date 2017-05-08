@@ -1,5 +1,7 @@
 package src;
 
+import iaik.security.ec.math.curve.ECPoint;
+import iaik.security.ec.math.field.GenericFieldElement;
 import mcl.bn254.*;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.crypto.CipherParameters;
@@ -51,7 +53,7 @@ public class Sm9Engine {
 
     }
 
-    public byte[] processBlock(byte [] in,int off,int len) throws Exception{
+    public byte [] processBlock(byte [] in,int off,int len) throws Exception{
 
         KeyGenerationCenter kgc=KeyGenerationCenter.getInstance();
         byte [] block;
@@ -74,21 +76,29 @@ public class Sm9Engine {
 
     private byte [] processEncrypt(byte []block,KeyGenerationCenter kgc) throws  Exception{
         byte hid = kgc.hid2;
-        Ec1 g1 = kgc.getG1();
-        Ec2 g2=kgc.getG2();
-        Ec1 ppube = kgc.getPpube();
         BigInteger N = kgc.getN();
-        Ec1 qb = new Ec1(g1);
-        byte [] k1,k2,c2,c1b;
-        Ec1 c1;
+//        Ec1 g1 = kgc.getG1();
+//        Ec2 g2=kgc.getG2();
+//        Ec1 ppube = kgc.getPpube();
+//        Ec1 qb = new Ec1(g1);
+//        Ec1 c1;
+
+        ECPoint g1,g2,ppube,qb,c1;
+        byte [] k1,k2,c2,c1b,wb1;
+
+        g1=kgc.getG1();
+        g2=kgc.getG2();
+        ppube=kgc.getPpube();
 
         byte [] idb=this.id.getBytes();
         byte[] merge=new byte[idb.length+1];
         System.arraycopy(idb,0,merge,0,idb.length);
         merge[idb.length]=hid;
         BigInteger h1=Sm9Util.h1(merge,N);
-        qb.mul(new Mpz(h1.toString(10)));
-        qb.add(ppube);
+
+//        qb.mul(new Mpz(h1.toString(10)));
+//        qb.add(ppube);
+        qb=g1.multiplyPoint(h1).addPoint(ppube);
 
         do {
             BigInteger r;
@@ -96,23 +106,25 @@ public class Sm9Engine {
                 r=new BigInteger(N.bitLength(),new SecureRandom());
             }while(r.compareTo(N)>=0||r.compareTo(BigInteger.ONE)<0);
 
-            c1=new Ec1(qb);
-            c1.mul(new Mpz(r.toString(10)));
-            boolean b1=c1.isValid();
-            c1b=Sm9Util.ec1ToBytes(c1);
-            System.out.println("first:"+Arrays.toString(c1b));
+//            c1=new Ec1(qb);
+//            c1.mul(new Mpz(r.toString(10)));
+//
+//            c1b=Sm9Util.ec1ToBytes(c1);
+//            Fp12 g=new Fp12();
+//            g.pairing(g2,ppube);
+//            Fp12 w=new Fp12(g);
+//            w.power(new Mpz(r.toString(10)));
+//            byte[] wb1=Sm9Util.Fp12ToBytes(w);
+            c1=qb.multiplyPoint(r);
+            c1b=Sm9Util.ECpoint1Tobytes(c1);
+            GenericFieldElement g=kgc.pair(ppube,g2);
+            GenericFieldElement w=g.exponentiate(r);
+            wb1=Sm9Util.GtElementToBytes(w);
 
-            Fp12 g=new Fp12();
-            g.pairing(g2,ppube);
-            Fp12 w=new Fp12(g);
-            w.power(new Mpz(r.toString(10)));
-            byte[] wb1=Sm9Util.Fp12ToBytes(w);
-            System.out.println("first w:"+Arrays.toString(wb1));
             if(type==0){
                 int klen =block.length*8+k2len*8;
                 byte [] merge1= Sm9Util.byteMerger(c1b,wb1);
                 byte [] merge2= Sm9Util.byteMerger(merge1,id.getBytes());
-                System.out.println("first:"+Arrays.toString(merge2));
                 byte [] k= Sm9Util.KDF(merge2,klen);
                 k1=new byte[block.length];
                 k2=new byte [k2len];
@@ -133,26 +145,22 @@ public class Sm9Engine {
                 sm4cipher.init(Cipher.ENCRYPT_MODE,key);
                 int s=sm4cipher.getOutputSize(block.length);
                 int insize=sm4cipher.getBlockSize();
-                System.out.println(insize);
                 c2=new byte[s];
                 c2=sm4cipher.doFinal(block,0,block.length);
             }
 
         }while(testZeros(k1));
-        Ec1 tempc=new Ec1(c1);
-        Fp tecx=tempc.getX();
-        Fp tecy=tempc.getY();
-        System.out.println(tecx);
-        System.out.println(tecy);
+
         byte[] c3=Sm9Util.MAC(k2,c2);
-        //BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
 
-        BigInteger Bx=new BigInteger(c1.getX().toString(),10);
-        BigInteger By=new BigInteger(c1.getY().toString(),10);
-
-        byte [] c1x=Sm9Util.bigIntegerTobytes(Bx);
-        byte [] c1y= Sm9Util.bigIntegerTobytes(By);
-        byte [] c1t=c1.toString().getBytes();
+//        BigInteger Bx=new BigInteger(c1.getX().toString(),10);
+//        BigInteger By=new BigInteger(c1.getY().toString(),10);
+//
+//        byte [] c1x=Sm9Util.bigIntegerTobytes(Bx);
+//        byte [] c1y= Sm9Util.bigIntegerTobytes(By);
+//        byte [] c1t=c1.toString().getBytes();
+        byte []c1x=c1.scalePoint().getCoordinate().getX().toByteArray();
+        byte []c1y=c1.scalePoint().getCoordinate().getY().toByteArray();
 
         ASN1Sequence seq=null;
         ASN1EncodableVector v=new ASN1EncodableVector();
@@ -160,7 +168,7 @@ public class Sm9Engine {
         v.add(new ASN1Integer(c1y));
         v.add(new DEROctetString(c3));
         v.add(new DEROctetString(c2));
-        v.add(new DEROctetString(c1t));
+        //v.add(new DEROctetString(c1t));
         seq=new DERSequence(v);
         byte[] res = null;
         try {
@@ -173,48 +181,54 @@ public class Sm9Engine {
     }
     private byte [] processDecrypt(byte []block)throws Exception{
 
+        KeyGenerationCenter kgc=KeyGenerationCenter.getInstance();
+
         ASN1Sequence asn1Obj = ASN1Sequence.getInstance(block);
         ASN1Integer c1x_encoded =ASN1Integer.getInstance(asn1Obj.getObjectAt(0)) ;
         ASN1Integer c1y_encoded =ASN1Integer.getInstance(asn1Obj.getObjectAt(1)) ;
 
         DEROctetString c2_encoded = (DEROctetString) asn1Obj.getObjectAt(3);
         DEROctetString c3_encoded = (DEROctetString) asn1Obj.getObjectAt(2);
-        DEROctetString c1t=(DEROctetString)asn1Obj.getObjectAt(4);
+       // DEROctetString c1t=(DEROctetString)asn1Obj.getObjectAt(4);
 
         BigInteger x=c1x_encoded.getPositiveValue();
         BigInteger y=c1y_encoded.getPositiveValue();
-
-
-
         byte[] c2 = c2_encoded.getOctets();
         byte[] c3 = c3_encoded.getOctets();
-        byte[] c1s= c1t.getOctets();
-        String c1string=new String(c1s);
-        String [] sp=c1string.split("_");
-        String p1=sp[0];
-        String p2=sp[1];
 
-
-        Ec1 c1p =new Ec1();
-        c1p.set(c1string);
-
-        byte[] xb=Sm9Util.bigIntegerTobytes(x);
-        byte[] yb=Sm9Util.bigIntegerTobytes(y);
-        byte[] c1b2=Sm9Util.byteMerger(xb,yb);
-        System.out.println("second c1:"+Arrays.toString(c1b2));
-        if(!c1p.isValid()){
-            throw new Exception("c1 invalid");
+//        byte[] c1s= c1t.getOctets();
+//        String c1string=new String(c1s);
+//        String [] sp=c1string.split("_");
+//        String p1=sp[0];
+//        String p2=sp[1];
+//        Ec1 c1p =new Ec1();
+//        c1p.set(c1string);
+//
+//        byte[] xb=Sm9Util.bigIntegerTobytes(x);
+//        byte[] yb=Sm9Util.bigIntegerTobytes(y);
+//        byte[] c1b2=Sm9Util.byteMerger(xb,yb);
+//
+        java.security.spec.ECPoint point =new java.security.spec.ECPoint(x,y);
+        ECPoint c1p;
+        try {
+            c1p=kgc.getCurve1().newPoint(point);
+        }catch (Exception e)
+        {
+            throw new Exception("c1 is invalid");
         }
-        Fp12 ws =new Fp12();
-        ws.pairing(privatekey.getDe(),c1p);
-        byte [] wb=Sm9Util.Fp12ToBytes(ws);
-        System.out.println("second w"+ Arrays.toString(wb));
+
+//        Fp12 ws =new Fp12();
+//        ws.pairing(privatekey.getDe(),c1p);
+//        byte [] wb=Sm9Util.Fp12ToBytes(ws);
+        GenericFieldElement w=kgc.pair(c1p,privatekey.getDe());
+        byte [] wb=Sm9Util.GtElementToBytes(w);
+        byte []c1b2=Sm9Util.ECpoint1Tobytes(c1p);
+
         byte [] k2,m;
         if(type==0){
             int klen=c2.length*8+k2len*8;
             byte [] merge1=Sm9Util.byteMerger(c1b2,wb);
             byte [] merge2=Sm9Util.byteMerger(merge1,id.getBytes());
-            System.out.println("second merge2:"+Arrays.toString(merge2));
             byte [] k=Sm9Util.KDF(merge2,klen);
             byte [] k1=new byte[c2.length];
 

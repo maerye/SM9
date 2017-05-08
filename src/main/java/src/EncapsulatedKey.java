@@ -1,5 +1,6 @@
 package src;
 
+import iaik.security.ec.math.curve.ECPoint;
 import mcl.bn254.Ec1;
 
 /**
@@ -7,18 +8,18 @@ import mcl.bn254.Ec1;
  */
 public class EncapsulatedKey {
     private byte[]k;
-    private Ec1 c;
+    private ECPoint c;
 
-    public EncapsulatedKey(byte[] k, Ec1 c) {
+    public EncapsulatedKey(byte[] k, ECPoint c) {
         this.k = k;
-        this.c = new Ec1(c);
+        this.c = c;
     }
 
     public byte[] getK() {
         return k;
     }
 
-    public Ec1 getC() {
+    public ECPoint getC() {
         return c;
     }
 }

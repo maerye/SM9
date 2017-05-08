@@ -1,6 +1,8 @@
 package src;
 
 import com.sun.tools.internal.xjc.reader.dtd.bindinfo.BIAttribute;
+import iaik.security.ec.math.curve.ECPoint;
+import iaik.security.ec.math.field.GenericFieldElement;
 import mcl.bn254.Ec1;
 import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
@@ -126,6 +128,23 @@ public class Sm9Util {
         return buffer.array();
 
     }*/
+
+    public static byte[] GtElementToBytes(GenericFieldElement gt){
+        byte [] result=new byte[BIGINTEGER_LENGTH*12];
+        byte [] source=gt.toByteArray();
+        for(int i=11;i>=0;i--)
+        {
+            System.arraycopy(source,i*32,result,(11-i)*32,32);
+        }
+        return result;
+    }
+    public static  byte [] ECpoint1Tobytes(ECPoint p)
+    {
+        byte [] x=p.scalePoint().getCoordinate().getX().toByteArray();
+        byte [] y=p.scalePoint().getCoordinate().getY().toByteArray();
+
+        return byteMerger(x,y);
+    }
     public static byte[] Fp12ToBytes(Fp12 fp12) {
         String [] x=fp12.toString().split(",");
         String charTdel="[]\n ";

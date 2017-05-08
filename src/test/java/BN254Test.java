@@ -28,31 +28,11 @@ public class BN254Test {
             Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
             Ec1 g1 = new Ec1(new Fp(-1), new Fp(1));
             Ec2 g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
-            System.out.println("g1=" + g1);
-            System.out.println("g2=" + g2);
-            System.out.println("aa=" + g2.getX().getA().toString());
-            System.out.println("ab=" + ab.toString());
-            Ec1 h=new Ec1();
-            h.set("0x2523648240000001ba344d80000000086121000000000013a700000000000012_0x1");
-            System.out.println("h=" + h);
+
             assertBool("g1 is on EC", g1.isValid());
             assertBool("g2 is on twist EC", g2.isValid());
             Mpz r = BN254.GetParamR();
-
-            System.out.println("r=" + r);
-            System.out.println("r="+new BigInteger(r.toString(),10).toString(10));
-           // BigInteger p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
-            System.out.println("p ="+ p.toString(2).length());
-            System.out.println("g2:"+g2.toString());
-            double temp=Math.log(new BigInteger(r.toString()).doubleValue())/Math.log(2);
-            double hlen=Math.ceil(5*temp/32)*8;
-            Fp2 tt =new Fp2(aa,ab);
-            System.out.println("a:"+tt.getA());
-            System.out.println("Fp12 1 : "+new Fp12(1));
-            //System.out.println("log:"+Math.log(new BigInteger(r.toString()).doubleValue())/Math.log(2));
-            //Fp12 gg=new Fp12()
-            System.out.println("hlen/v: "+String.valueOf(hlen/(32*8)));
-            {
+          {
                 Ec1 t = new Ec1(g1);
                 t.mul(r);
                 assertBool("orgder of g1 == r", t.isZero());
