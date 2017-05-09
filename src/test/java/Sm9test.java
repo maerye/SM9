@@ -7,7 +7,6 @@ import mcl.bn254.Ec1;
 import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.math.myec.bncurves.*;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -63,39 +62,7 @@ public class Sm9test {
             Security.addProvider(bcp);
         }
     }
-    @Test
-    public void test () throws Exception {
 
-        KeyGenerationCenter kgc =new KeyGenerationCenter();
-        Sm9SignPrivateKey sm9SignPrivateKey =kgc.generateSignPrivatekey("mama@123.com");
-
-        Sm9Curve sm9Curve =Sm9Curve.getInstance();
-        Sm9Curve2 sm9Curve2 = new Sm9Curve2(sm9Curve);
-        BNPoint p1 =sm9Curve.getBnCurve().kG(new BigInteger("16",10));
-        assert (p1.equals(sm9Curve.getG().twice(4)));
-
-        BNPoint2 point2 =sm9Curve2.getBNCurve2().kG(BigInteger.ONE);
-        assert (point2.equals(sm9Curve2.getBNCurve2().getGt()));
-
-
-        BNPoint2 point3 =sm9Curve2.getBNCurve2().kG(new BigInteger("16",10));
-        assert (point3.equals(sm9Curve2.getBNCurve2().getGt().twice(4)));
-
-        assert (sm9Curve2.getGt().multiply(sm9Curve.getN()).isZero());
-        assert (!sm9Curve2.getGt().multiply(new BigInteger("100",10)).isZero());
-
-        assert (sm9Curve2.getBNCurve2().contains(sm9Curve2.getGt()));
-
-        BNPoint2 point21 =sm9Curve2.getBNCurve2().pointFactory(new SecureRandom());
-        assert (sm9Curve2.getBNCurve2().contains(point21));
-
-        BNPairing pr=new BNPairing(sm9Curve2.getBNCurve2());
-        BNPoint p11=sm9Curve.getBnCurve().pointFactory(new SecureRandom());
-        BNPoint2 p22=sm9Curve2.getBNCurve2().pointFactory(new SecureRandom());
-        BNField12 e=pr.ate(p22,p11);
-      /// assert (Sm9Util.bnField12ToBytes(e).length==32*12);
-
-    }
 
 
     @Test
@@ -132,11 +99,11 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,1);
+        sm9Engine.initEncrypt(true,id,16,32,0);
         byte [] m="0123456789abcdeffedcba9876543210".getBytes();
         byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
         byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
         assertArrayEquals(m,mp);
     }
@@ -205,92 +172,7 @@ public class Sm9test {
 //
 //        System.out.println(cb.length);
     }
-    @Test
-    public void testlibrary(){
-        BNPoint g1=sm9Curve.getG();
-        BNPoint2 g2=sm9Curve2.getGt();
-        assertBool("g1 is on ec",sm9Curve.getBnCurve().contains(g1));
-        assertBool("g2 is on ec",sm9Curve2.getBNCurve2().contains(g2));
 
-        BigInteger N=sm9Curve.getN();
-        BNPoint t=g1.multiply(N);
-        assertBool("order of g1 == N ",t.isZero());
-
-        BNPoint2 t2=g2.multiply(N);
-        assertBool("order of g2== N",t2.isZero());
-
-        BigInteger a =new BigInteger("1232131");
-        BigInteger b=new BigInteger("321314443");
-        BigInteger c=a.add(b);
-
-        BNPoint p1=g1.multiply(c);
-        BNPoint p11=g1.multiply(a).add(g1.multiply(b));
-
-        assertEqual("check g1 * c = g1 * a + g1 * b",p1,p11);
-
-        BNPairing pairing =new BNPairing(sm9Curve2.getBNCurve2());
-        BNField12 e=pairing.ate(g2,g1);
-        System.out.println("e = "+e);
-        BNField12 er=e.exp(N);
-
-        assertBool("order of e == N",er.isOne());
-
-        BNPoint2 g2a=g2.multiply(a);//???
-        //BNPoint2 g2a=sm9Curve2.getBNCurve2().kG(a);
-        BNField12 e2=pairing.ate(g2a,g1);
-        BNField12 e22=e.exp(a);
-        assertEqual("e(g2 * a, g1) = e(g2, g1)^a",e2,e22);
-
-        BNPoint g1a=g1.multiply(a);
-        BNField12 ex=pairing.ate(g2,g1a);
-        assertEqual("e(g2 , g1 *a) = e(g2, g1)^a",ex,e22);
-
-        BNPoint q1=g1.multiply(new BigInteger("12345"));
-        assertBool("p2 is on ec",sm9Curve.getBnCurve().contains(q1));
-
-        BNPoint q2=q1.add(g1);
-
-        BNField12 g2q1=pairing.ate(g2,q1);
-        BNField12 g2q2=pairing.ate(g2,q2);
-
-        assertEqual("e = e1*e2",g2q2,e.multiply(g2q1));
-
-        BigInteger a0 ,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,p,sm9q;
-        a0 =new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
-        a1= new BigInteger("84B87422330D7936EABA1109FA5A7A7181EE16F2438B0AEB2F38FD5F7554E57A",16);
-        a2=new BigInteger("4C744E69C4A2E1C8ED72F796D151A17CE2325B943260FC460B9F73CB57C9014B",16);
-        a3=new BigInteger("B3129A75D31D17194675A1BC56947920898FBF390A5BF5D931CE6CBB3340F66D",16);
-        a4=new BigInteger("93634F44FA13AF76169F3CC8FBEA880ADAFF8475D5FD28A75DEB83C44362B439",16);
-        a5=new BigInteger("1604A3FCFA9783E667CE9FCB1062C2A5C6685C316DDA62DE0548BAA6BA30038B",16);
-        a6=new BigInteger("5A1AE172102EFD95DF7338DBC577C66D8D6C15E0A0158C7507228EFB078F42A6",16);
-        a7=new BigInteger("67E0E0C2EED7A6993DCE28FE9AA2EF56834307860839677F96685F2B44D0911F",16);
-        a8=new BigInteger("A01F2C8BEE81769609462C69C96AA923FD863E209D3CE26DD889B55E2E3873DB",16);
-        a9=new BigInteger("38BFFE40A22D529A0C66124B2C308DAC9229912656F62B4FACFCED408E02380F",16);
-        a10=new BigInteger("28B3404A61908F5D6198815C99AF1990C8AF38655930058C28C21BB539CE0000",16);
-        a11=new BigInteger("4E378FB5561CD0668F906B731AC58FEE25738EDF09CADC7A29C0ABC0177AEA6D",16);
-        p=new BigInteger("16798108731015832284940804142231733909889187121439069848933715426072753864723",10);
-        sm9q=new BigInteger("B640000002A3A6F1D603AB4FF58EC74521F2934B1A7AEEDBE56F9B27E351457D",16);
-
-        BNField2 [] g=new BNField2[6];
-
-        g[0]=new BNField2(new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16),new BigInteger("84B87422330D7936EABA1109FA5A7A7181EE16F2438B0AEB2F38FD5F7554E57A",16));
-        g[1]=new BNField2(new BigInteger("4C744E69C4A2E1C8ED72F796D151A17CE2325B943260FC460B9F73CB57C9014B",16),new BigInteger("B3129A75D31D17194675A1BC56947920898FBF390A5BF5D931CE6CBB3340F66D",16));
-        g[2]=new BNField2(new BigInteger("93634F44FA13AF76169F3CC8FBEA880ADAFF8475D5FD28A75DEB83C44362B439",16),new BigInteger("1604A3FCFA9783E667CE9FCB1062C2A5C6685C316DDA62DE0548BAA6BA30038B",16));
-        g[3]=new BNField2(new BigInteger("5A1AE172102EFD95DF7338DBC577C66D8D6C15E0A0158C7507228EFB078F42A6",16),new BigInteger("67E0E0C2EED7A6993DCE28FE9AA2EF56834307860839677F96685F2B44D0911F",16));
-        g[4]=new BNField2(new BigInteger("A01F2C8BEE81769609462C69C96AA923FD863E209D3CE26DD889B55E2E3873DB",16),new BigInteger("38BFFE40A22D529A0C66124B2C308DAC9229912656F62B4FACFCED408E02380F",16));
-        g[5]=new BNField2(new BigInteger("28B3404A61908F5D6198815C99AF1990C8AF38655930058C28C21BB539CE0000",16),new BigInteger("4E378FB5561CD0668F906B731AC58FEE25738EDF09CADC7A29C0ABC0177AEA6D",16));
-
-        String gpoint="[[["+ a0.toString(10)+","+a1.toString(10)+"],\n["+a2.toString(10)+","+a3.toString(10)+"],\n["+a4.toString(10)+","+a5.toString(10)+"]],\n"
-                +"[["+a6.toString(10)+","+a7.toString(10)+"],\n["+a8.toString(10)+","+a9.toString(10)+"],\n["+a10.toString(10)+","+a11.toString(10)+"]]]";
-
-        System.out.println("a0:"+a0.toString(10)+" a0 mod p :"+a0.mod(p).toString(10)+" a0 mod q:"+a0.mod(sm9q).toString(16));
-        System.out.println("a0 0x"+a0.toString(16));
-
-        Fp12 ng= new Fp12();
-        ng.set(gpoint);
-        System.out.println(ng.toString());
-       byte[] ngbytes= Sm9Util.Fp12ToBytes(ng);
-    }
     @Test
     public void testIAIK(){
         try {
