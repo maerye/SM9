@@ -1,6 +1,7 @@
 package src;
 
 import mcl.bn254.Ec1;
+import org.bouncycastle.math.myec.bncurves.BNPoint;
 
 /**
  * Created by mzy on 2017/4/17.
@@ -8,13 +9,13 @@ import mcl.bn254.Ec1;
 public class Sm9SignPrivateKey {
 
 
-    private Ec1 ds;
+    private BNPoint ds;
 
-    public Sm9SignPrivateKey(Ec1 point)
+    public Sm9SignPrivateKey(BNPoint point)
     {
         this.ds=point;
     }
-    public Ec1 getDs() {
+    public BNPoint getDs() {
         return ds;
     }
 }

@@ -84,10 +84,10 @@ public class BNCurve2 {
         //*/
         assert (Gt != null);
         Gt = Gt.multiply(E.bn.ht).normalize();
-        /*
-        System.out.println("Gt = " + Gt);
-        System.out.println("n*Gt = " + Gt.multiply(n));
-        //*/
+
+//        System.out.println("Gt = " + Gt);
+//        System.out.println("n*Gt = " + Gt.multiply(E.getN()).isZero());
+
         pp16Gt = new BNPoint2[(E.bn.n.bitLength() + 3)/4][16];
         BNPoint2[] pp16Gi = pp16Gt[0];
         pp16Gi[0] = infinity;

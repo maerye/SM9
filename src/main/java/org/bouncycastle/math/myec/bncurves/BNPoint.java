@@ -109,7 +109,7 @@ public class BNPoint {
      * @param   x   the affine x-coordinate (mod p).
      * @param   y   the affine y-coordinate (mod p).
      */
-    BNPoint(BNCurve E, BigInteger x, BigInteger y) {
+    public BNPoint(BNCurve E, BigInteger x, BigInteger y) {
         this.E = E;
         BigInteger p = E.bn.p; // shorthand
         this.x = x.mod(p);
@@ -662,4 +662,10 @@ public class BNPoint {
         return this.isZero() ? "O" : "[" + x + " : " + y + " : " + z + "]";
     }
 
+    public  BigInteger getX() {
+        return x;
+    }
+    public BigInteger getY(){
+        return y;
+    }
 }

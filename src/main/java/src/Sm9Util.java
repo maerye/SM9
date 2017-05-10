@@ -8,6 +8,7 @@ import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.bouncycastle.math.myec.bncurves.BNField12;
 import org.bouncycastle.math.myec.bncurves.BNField2;
+import org.bouncycastle.math.myec.bncurves.BNPoint;
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.math.BigInteger;
@@ -112,7 +113,15 @@ public class Sm9Util {
 
     }
 
- /*   public static byte[] bnField12ToBytes(BNField12  bnField12) {
+    public static byte[] bnpointToBytes(BNPoint point){
+        BNPoint normalPoint=point.normalize();
+        BigInteger x=normalPoint.getX();
+        BigInteger y=normalPoint.getY();
+        byte [] xB=bigIntegerTobytes(x);
+        byte [] yB=bigIntegerTobytes(y);
+        return byteMerger(xB,yB);
+    }
+    public static byte[] bnField12ToBytes(BNField12  bnField12) {
         BNField2 [] field2s=bnField12.v;
         ByteBuffer buffer=ByteBuffer.allocate(BIGINTEGER_LENGTH*12);
         for(int i=field2s.length-1;i>=0;i--){
@@ -125,7 +134,7 @@ public class Sm9Util {
         }
         return buffer.array();
 
-    }*/
+    }
     public static byte[] Fp12ToBytes(Fp12 fp12) {
         String [] x=fp12.toString().split(",");
         String charTdel="[]\n ";

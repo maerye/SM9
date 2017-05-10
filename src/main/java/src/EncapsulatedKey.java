@@ -1,24 +1,25 @@
 package src;
 
 import mcl.bn254.Ec1;
+import org.bouncycastle.math.myec.bncurves.BNPoint;
 
 /**
  * Created by mzy on 2017/4/24.
  */
 public class EncapsulatedKey {
     private byte[]k;
-    private Ec1 c;
+    private BNPoint c;
 
-    public EncapsulatedKey(byte[] k, Ec1 c) {
+    public EncapsulatedKey(byte[] k, BNPoint c) {
         this.k = k;
-        this.c = new Ec1(c);
+        this.c = c;
     }
 
     public byte[] getK() {
         return k;
     }
 
-    public Ec1 getC() {
+    public BNPoint getC() {
         return c;
     }
 }

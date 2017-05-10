@@ -11,9 +11,9 @@ import java.util.logging.SimpleFormatter;
  */
 public class Signature {
     public BigInteger h;
-    Ec1 s;
+    BNPoint s;
 
-    public Signature (BigInteger h, Ec1 s)
+    public Signature (BigInteger h, BNPoint s)
     {
         this.h=h;
         this.s=s;
