@@ -1,6 +1,5 @@
 package src;
 
-import com.sun.tools.internal.xjc.reader.dtd.bindinfo.BIAttribute;
 import iaik.security.ec.math.curve.ECPoint;
 import iaik.security.ec.math.field.GenericFieldElement;
 import mcl.bn254.Ec1;
@@ -8,10 +7,6 @@ import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SM3Digest;
-import org.bouncycastle.math.myec.bncurves.BNField12;
-import org.bouncycastle.math.myec.bncurves.BNField2;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
-
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;

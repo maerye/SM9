@@ -61,7 +61,6 @@ public class KeyGenerationCenter {
         this.curve1 = pairing2.getGroup1();
         this.curve2 = pairing2.getGroup2();
 
-        GenericField target = pairing2.getTargetGroup();
 
         this.g1=curve1.getGenerator();
         this.g2=curve2.getGenerator();
