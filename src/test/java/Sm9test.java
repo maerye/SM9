@@ -104,21 +104,21 @@ public class Sm9test {
 
         assertArrayEquals(encapsulatedKey.getK(),k);
     }
-//    @Test
-//    public void testEncrypt()throws Exception{
-//        kgc= KeyGenerationCenter.getInstance();
-//        Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
-//        Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
-//        Sm9Engine sm9Engine=new Sm9Engine(cipher);
-//        sm9Engine.initEncrypt(true,id,16,32,0);
-//        byte [] m="0123456789abcdeffedcba9876543210".getBytes();
-//        byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
-//
-//        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
-//        byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
-//        System.out.println(Arrays.toString(mp));
-//        assertArrayEquals(m,mp);
-//    }
+    @Test
+    public void testEncrypt()throws Exception{
+        kgc= KeyGenerationCenter.getInstance();
+        Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
+        Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
+        Sm9Engine sm9Engine=new Sm9Engine(cipher);
+        sm9Engine.initEncrypt(true,id,16,32,0);
+        byte [] m="0123456789abcdeffedcba9876543210".getBytes();
+        byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
+
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
+        byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
+
+        assertArrayEquals(m,mp);
+    }
     @Test
     public void testh() {
         BigInteger N =new BigInteger("B640000002A3A6F1D603AB4FF58EC74449F2934B18EA8BEEE56EE19CD69ECF25",16);
@@ -209,7 +209,10 @@ public class Sm9test {
 
         System.out.println("p11"+p11);
         System.out.println("normalize p11"+p11.normalize());
-        BNPoint p11copy=new BNPoint(sm9Curve.getBnCurve(),p11.normalize().getX(),p11.normalize().getY());
+        byte [] x=Sm9Util.bigIntegerTobytes(p11.normalize().getX());
+        byte [] y=Sm9Util.bigIntegerTobytes(p11.normalize().getY());
+
+        BNPoint p11copy=new BNPoint(sm9Curve.getBnCurve(),new BigInteger(1,x),new BigInteger(1,y));
         assertEqual("copy success",p11,p11copy);
 
         assertEqual("check g1 * c = g1 * a + g1 * b",p1,p11);
