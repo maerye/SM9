@@ -1,6 +1,5 @@
 package src;
 
-import mcl.bn254.Ec2;
 import org.bouncycastle.math.myec.bncurves.BNPoint2;
 
 /**

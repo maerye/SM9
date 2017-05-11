@@ -1,9 +1,5 @@
 package src;
 
-import mcl.bn254.Ec1;
-import mcl.bn254.Ec2;
-import mcl.bn254.Fp12;
-import mcl.bn254.Mpz;
 import org.bouncycastle.math.myec.bncurves.*;
 
 import java.math.BigInteger;
@@ -102,15 +98,6 @@ public class Sm9Signer {
         BNField12 u=pairing.eta(signature.s,p);
         BNField12 w2=u.multiply(t);
         byte[] wb2=Sm9Util.bnField12ToBytes(w2);
-
-//        Ec2 p=new Ec2(p2);
-//        p.mul(new Mpz(h1.toString(10)));
-//        p.add(ppubs);
-//        Fp12 u =new Fp12();
-//        u.pairing(p,signature.s);
-//        Fp12 w=new Fp12(u);
-//        w.mul(t);
-        //byte [] wb2=Sm9Util.Fp12ToBytes(w);
         byte[] merge2=Sm9Util.byteMerger(message,wb2);
         BigInteger h2=Sm9Util.h2(merge2,N);
 

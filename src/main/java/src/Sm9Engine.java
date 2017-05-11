@@ -2,14 +2,12 @@ package src;
 
 import mcl.bn254.*;
 import org.bouncycastle.asn1.*;
-import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.math.myec.bncurves.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.math.BigInteger;
 import java.security.Key;
 import java.security.SecureRandom;

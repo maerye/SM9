@@ -1,10 +1,6 @@
 package src;
 
-import mcl.bn254.*;
-import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.myec.bncurves.*;
-
-
 import java.math.BigInteger;
 import java.security.SecureRandom;
 
@@ -13,10 +9,7 @@ import java.security.SecureRandom;
  */
 public class KeyGenerationCenter {
 
-    static {
-        System.loadLibrary("bn254_if_wrap");
-        BN254.SystemInit();
-    }
+
     private static int fieldbits=256;
     private BNParams bnParams;
     private BNCurve curve1;
@@ -101,12 +94,6 @@ public class KeyGenerationCenter {
             throw new Exception("need to update the master sign private key ");
         }
         BigInteger t2 = ks.multiply(t1.modInverse(N)).mod(N);
-
-       // BNPoint ds = sm9Curve.getBnCurve().kG(t2);
-//        Ec1 ds =new Ec1(g1);
-//        Mpz t2mpz=new Mpz(t2.toString(10));
-//        ds.mul(t2mpz);
-
         BNPoint ds=g1.multiply(t2);
 
         return new Sm9SignPrivateKey(ds);
@@ -126,9 +113,6 @@ public class KeyGenerationCenter {
             throw new Exception("need to update the master encrypt private key");
         }
         BigInteger t2=ke.multiply(t1.modInverse(N)).mod(N);//???
-//        Ec2 de=new Ec2(g2);
-//        de.mul(new Mpz(t2.toString(10)));
-
         BNPoint2 de=g2.multiply0(t2);
         return new Sm9EncryptPrivateKey(de);
     }

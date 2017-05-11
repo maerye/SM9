@@ -1,11 +1,9 @@
 package src;
 
-import mcl.bn254.*;
 import org.bouncycastle.math.myec.bncurves.*;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
-import java.util.Arrays;
 
 /**
  * Created by mzy on 2017/4/24.
@@ -25,10 +23,6 @@ public class KEM {
         merge[id.length]=kgc.hid2;
 
         BigInteger h1=Sm9Util.h1(merge,N);
-
-//        Ec1 qb=new Ec1(g1);
-//        qb.mul(new Mpz(h1.toString(10)));
-//        qb.add(ppube);
         BNPoint qb=g1.multiply(h1).add(ppube);
 
         byte [] k;
@@ -40,18 +34,8 @@ public class KEM {
 
             } while (r.compareTo(N) >= 0||r.compareTo(BigInteger.ONE)<0);
 
-//            c=new Ec1(qb);
-//            c.mul(new Mpz(r.toString(10)));
             c=qb.multiply(r);
-
-
             byte[]cb=Sm9Util.bnpointToBytes(c);
-
-//            Fp12 g=new Fp12();
-//            g.pairing(g2,ppube);
-//            Fp12 w=new Fp12(g);
-//            w.power(new Mpz(r.toString(10)));
-
             BNPairing pair=new BNPairing(curve2);
             BNField12 g=pair.eta(ppube,g2);
             BNField12 w=g.exp(r);
@@ -75,10 +59,6 @@ public class KEM {
         {
             throw new Exception("invalid content");
         }
-//        Ec1 ec1=new Ec1(c);
-//        Fp12 w=new Fp12();
-//        w.pairing(de.getDe(),ec1);
-//        byte [] wb=Sm9Util.Fp12ToBytes(w);
         BNPairing pairing=new BNPairing(curve2);
         BNField12 w=pairing.eta(c,de.getDe());
 
