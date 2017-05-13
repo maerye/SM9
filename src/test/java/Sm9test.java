@@ -1,3 +1,4 @@
+import apach.bn.BIG;
 import mcl.bn254.Ec1;
 import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
@@ -170,6 +171,30 @@ public class Sm9test {
                 "908EE558DF5F5E0721317FC6E829C242426F62",16);
         byte [] k=Sm9Util.KDF(merge.toByteArray(),0x0100);
         assertArrayEquals(new BigInteger("4FF5CF86D2AD40C8F4BAC98D76ABDBDE0C0E2F0A829D3F911EF5B2BCE0695480",16).toByteArray(),k);
+    }
+    @Test
+    public void testApach(){
+        BigInteger p=new BigInteger("B640000002A3A6F1D603AB4FF58EC74521F2934B1A7AEEDBE56F9B27E351457D",16);
+        BigInteger _0= BigInteger.ZERO;
+        BigInteger _1= BigInteger.ONE;
+        BigInteger _2= new BigInteger("2");
+        BigInteger r=p.mod(new BigInteger("12",10));
+        assert r.equals(BigInteger.ONE);
+
+        SM9Field2 a=new SM9Field2(new BigInteger("1"),new BigInteger("2"));
+        SM9Field2 b=new SM9Field2(new BigInteger("2"),new BigInteger("3"));
+        SM9Field2 c=a.multiply(b);
+
+       SM9Field2 apow=a.square();
+       assertTrue(apow.equals(a.multiply(a)));
+       assertTrue(a.negate().add(a).isZero());
+        assertTrue(a.sub(a).isZero());
+        System.out.println(c);
+
+
+        SM9Field4 field4=new SM9Field4(a,b);
+        assertTrue(field4.add(field4).equals(field4.multiply(new SM9Field4(new SM9Field2(_2,_0),new SM9Field2(_0,_0)))));
+        assertTrue(field4.multiply(field4).equals(field4.square()));
     }
     @Test
     public void testEc1tobytes()
