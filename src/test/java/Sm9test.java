@@ -1,7 +1,4 @@
 import iaik.security.ec.common.PointEncoders;
-import it.unisa.dia.gas.jpbc.*;
-import it.unisa.dia.gas.plaf.jpbc.pairing.PairingFactory;
-import it.unisa.dia.gas.plaf.jpbc.pairing.f.TypeFCurveGenerator;
 
 import mcl.bn254.Ec1;
 import mcl.bn254.Fp;
@@ -35,6 +32,12 @@ import iaik.security.ec.math.curve.Pairing;
 import iaik.security.ec.math.curve.PairingTypes;
 import iaik.security.ec.math.field.GenericField;
 import iaik.security.ec.math.field.GenericFieldElement;
+import src.api.Element;
+import src.api.Field;
+import src.api.PairingParameters;
+import src.api.PairingParametersGenerator;
+import src.pairing.f.TypeFCurveGenerator;
+import src.pairing.f.TypeFPairing;
 
 
 import static junit.framework.TestCase.assertEquals;
@@ -46,8 +49,7 @@ import static org.junit.Assert.assertArrayEquals;
  */
 public class Sm9test {
 
-    private Sm9Curve sm9Curve;
-    private Sm9Curve2 sm9Curve2;
+
     private KeyGenerationCenter kgc;
     private String id ="maerye@123.com";
     private String testString ="testIng";
@@ -55,8 +57,6 @@ public class Sm9test {
     public void init()
     {
         kgc=KeyGenerationCenter.getInstance();
-        sm9Curve=Sm9Curve.getInstance();
-        sm9Curve2=new Sm9Curve2(sm9Curve);
         if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
             BouncyCastleProvider bcp = new BouncyCastleProvider();
             Security.addProvider(bcp);
@@ -407,7 +407,7 @@ public class Sm9test {
         PairingParameters parameters=pairingParametersGenerator.generate();
 
         System.out.println(parameters.toString());
-        it.unisa.dia.gas.jpbc.Pairing pairing = PairingFactory.getPairing(parameters);
+        TypeFPairing pairing=new TypeFPairing(parameters);
 
         Field G1=pairing.getG1();
         Field G2=pairing.getG2();
@@ -419,13 +419,8 @@ public class Sm9test {
 
         Element in1=G1.newRandomElement();
         Element in2;
-        while(true) {
-            in2 = G2.newRandomElement();
-            if (in2.mul(order2).isZero())
-            {
-                break;
-            }
-        }
+        in2 = G2.newRandomElement();
+
 
         Element inT=GT.newRandomElement();
         System.out.println(in1.toString());
