@@ -77,7 +77,6 @@ public class TypeFTateNoDenomMillerPairingMap extends AbstractMillerPairingMap {
         Element c = a.duplicate();
         Element t0 = a.duplicate();
         Element cca = a.duplicate();
-
         Polynomial e0 = pairingData.Fq12.newElement();
         Polynomial v = (Polynomial) pairingData.Fq12.newOneElement();
 
