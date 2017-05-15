@@ -50,7 +50,7 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
         //
         // a = -(V1y - Vy)
         // b = V1x - Vx
-        // c = -(Vy b + a Vx);
+        //c = -(2 Vy^2 + a Vx);
 
         a.set(Vy).sub(V1y);
         b.set(V1x).sub(Vx);
@@ -67,7 +67,8 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
         //but we multiply by -2*V.y to avoid division so:
         //a = -(3 Vx^2 + cc->a)
         //b = 2 * Vy
-        //c = -(2 Vy^2 + a Vx);
+
+        //c = -(Vy b + a Vx);
 
         a.set(Vx).square().mul(3).add(curveA).negate();
         b.set(Vy).twice();
