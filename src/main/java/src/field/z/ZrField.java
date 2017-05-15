@@ -58,8 +58,9 @@ public class ZrField extends AbstractField<ZrElement> {
                 nqr.setToRandom();
             } while (nqr.isSqr());
         }
-        
+
         return nqr.duplicate();
+
     }
 
     public int getLengthInBytes() {

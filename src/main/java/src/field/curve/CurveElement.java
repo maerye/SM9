@@ -65,7 +65,9 @@ public class CurveElement<E extends Element, F extends CurveField> extends Abstr
 
         return this;
     }
-
+    public void setInfFlag(int flag){
+        this.infFlag=flag;
+    }
     public CurveElement set(int value) {
         if (value == 0 || value == 1)
             setToZero();
@@ -225,6 +227,27 @@ public class CurveElement<E extends Element, F extends CurveField> extends Abstr
 
     public CurveElement mul(BigInteger n) {
         return (CurveElement) pow(n);
+    }
+    public CurveElement mul0(BigInteger n){
+
+        String n2=n.toString(2);
+        String [] ns=n2.split("");
+        assert (n2.length()==ns.length);
+
+        CurveElement q=field.newElement();
+        q.getX().setToZero();
+        q.getY().setToZero();
+        q.setToZero();
+
+        for (int j=0;j<ns.length;j++){
+            q=q.twice();
+            if(ns[j].equals("1"))
+            {
+                q=q.add(this);
+            }
+        }
+
+        return q;
     }
 
     public CurveElement mulZn(Element e) {
@@ -392,7 +415,7 @@ public class CurveElement<E extends Element, F extends CurveField> extends Abstr
         infFlag = 0;
     }
 
-    protected void setPointFromX() {
+    public void setPointFromX() {
         infFlag = 0;
         y.set(x.duplicate().square().add(field.a).mul(x).add(field.b).sqrt());
     }

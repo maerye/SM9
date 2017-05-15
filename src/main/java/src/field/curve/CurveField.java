@@ -56,6 +56,15 @@ public class CurveField<F extends Field> extends AbstractFieldOver<F, CurveEleme
         this.gen = newElementFromBytes(gen);
     }
 
+    public CurveField(SecureRandom random, Element a, Element b, BigInteger order, Element gen) {
+        super(random, (F) a.getField());
+
+        this.a = a;
+        this.b = b;
+        this.order = order;
+        this.gen = gen;
+    }
+
     public CurveField(SecureRandom random, Element a, Element b, BigInteger order, BigInteger cofac) {
         super(random, (F) a.getField());
 

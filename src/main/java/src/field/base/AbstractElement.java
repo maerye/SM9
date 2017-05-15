@@ -172,6 +172,7 @@ public abstract class AbstractElement<F extends AbstractField> implements Elemen
      *
      * @param n
      */
+
     protected void elementPowWind(BigInteger n) {
         /* early abort if raising to power 0 */
         if (n.signum() == 0) {

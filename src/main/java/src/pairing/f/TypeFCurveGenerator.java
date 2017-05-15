@@ -6,6 +6,7 @@ import src.field.curve.CurveField;
 import src.field.poly.PolyElement;
 import src.field.poly.PolyField;
 import src.field.quadratic.QuadraticField;
+import src.field.z.ZrElement;
 import src.field.z.ZrField;
 import src.pairing.f.parameters.PropertiesParameters;
 import src.util.math.BigIntegerUtils;
@@ -34,52 +35,43 @@ public class TypeFCurveGenerator implements PairingParametersGenerator {
 
 
     public PairingParameters generate() {
-        //36 is a 6-bit number
-        int xbit = (rBits - 6) / 4;
 
         // Compute q and r primes
 
         //TODO: use binary search to find smallest appropriate x
         BigInteger q, r, b;
 
-        BigInteger x = BigInteger.ZERO.setBit(xbit);
+        BigInteger x = new BigInteger("600000000058F98A",16);
+        b=BigInteger.valueOf(5);
         BigInteger t;
-        for (; ;) {
-            // t = 6x^2 + 1
-            t = x.multiply(x).multiply(BigInteger.valueOf(6)).add(BigInteger.ONE);
+        // t = 6x^2 + 1
+        t = x.multiply(x).multiply(BigInteger.valueOf(6)).add(BigInteger.ONE);
+        // q = 36x^4 + 36x^3 + 24x^2 + 6x + 1
+        q = tryPlusX(x);
+        // r = 36x^4 + 36x^3 + 18x^2 + 6x + 1
+        r = q.subtract(t).add(BigInteger.ONE);
 
-            // q = 36x^4 + 36x^3 + 24x^2 - 6x + 1
-            q = tryMinusX(x);
-            // r = 36x^4 + 36x^3 + 18x^2 - 6x + 1
-            r = q.subtract(t).add(BigInteger.ONE);
-
-            if (q.isProbablePrime(10) && r.isProbablePrime(10)) break;
-
-            // q = 36x^4 + 36x^3 + 24x^2 + 6x + 1
-            q = tryPlusX(x);
-            // r = 36x^4 + 36x^3 + 18x^2 + 6x + 1
-            r = q.subtract(t).add(BigInteger.ONE);
-
-            if (q.isProbablePrime(10) && r.isProbablePrime(10)) break;
-
-            x = x.add(BigInteger.ONE);
-        }
 
         // Compute b
         Field Fq = new ZrField(random, q);
-        Element e1 = Fq.newElement();
-        for (; ;) {
-            e1.setToRandom();
 
-            Field curveField = new CurveField(random, e1, r, null);
-            Element point = curveField.newRandomElement().mul(r);
-            if (point.isZero())
-                break;
-        }
-        b = e1.toBigInteger();
+        Element e1 = Fq.newElement();
+//        for (; ;) {
+//            e1.setToRandom();
+//
+//            Field curveField = new CurveField(random, e1, r, null);
+//            Element point = curveField.newRandomElement().mul(r);
+//            if (point.isZero())
+//                break;
+//        }
+//        b = e1.toBigInteger();
+
+
 
         Field Fq2 = new QuadraticField(random, Fq);
-        BigInteger beta = Fq.getNqr().toBigInteger();
+       // BigInteger beta = Fq.getNqr().toBigInteger();
+        BigInteger beta=Fq.newElement(-2).toBigInteger();
+
 
         PolyField Fq2x = new PolyField(random, Fq2);
         PolyElement<Point> f = Fq2x.newElement();
@@ -89,37 +81,41 @@ public class TypeFCurveGenerator implements PairingParametersGenerator {
         // coefficients.
         f.ensureSize(7);
         f.getCoefficient(6).setToOne();
-        for (; ;) {
-            f.getCoefficient(0).setToRandom();
+//        for (; ;) {
+//            f.getCoefficient(0).setToRandom();
+//
+//            if (f.isIrriducible())
+//                break;
+//        }
+        Point tmp = (Point) Fq2.newElement();
+        tmp.getX().setToZero();
+        tmp.getY().setToOne();
+        f.getCoefficient(0).set(tmp.negate());
 
-            if (f.isIrriducible())
-                break;
-        }
 
         //extend F_q^2 using f = x^6 + alpha
         //see if sextic twist contains a subgroup of order r
         //if not, it's the wrong twist: replace alpha with alpha^5
-        e1 = Fq2.newElement().set(b).mul(f.getCoefficient(0)).negate();
-
-        Field curveField = new CurveField(random, e1, r, null);
-        Element point = curveField.newRandomElement();
+       // e1 = Fq2.newElement().set(b).mul(f.getCoefficient(0)).negate();
+        //Field curveField = new CurveField(random, e1, r, null);
+       // Element point = curveField.newRandomElement();
 
         //I'm not sure what the #E'(F_q^2) is, but
         //it definitely divides n_12 = #E(F_q^12). It contains a
         //subgroup of order r if and only if
         //(n_12 / r^2)P != O for some (in fact most) P in E'(F_q^6)
-        BigInteger z0 = q.pow(12).add(BigInteger.ONE);
-
-        BigInteger z1 = BigIntegerUtils.traceN(q, t, 12);
-        z1 = z0.subtract(z1);
-        z0 = r.multiply(r);
-        z1 = z1.divide(z0);
-
-        point.mul(z1);
-        if (point.isZero()) {
-            z0 = BigInteger.valueOf(5);
-            f.getCoefficient(0).pow(z0);
-        }
+//        BigInteger z0 = q.pow(12).add(BigInteger.ONE);
+//
+//        BigInteger z1 = BigIntegerUtils.traceN(q, t, 12);
+//        z1 = z0.subtract(z1);
+//        z0 = r.multiply(r);
+//        z1 = z1.divide(z0);
+//
+//        point.mul(z1);
+//        if (point.isZero()) {
+//            z0 = BigInteger.valueOf(5);
+//            f.getCoefficient(0).pow(z0);
+//        }
 
         // Store parameters
         PropertiesParameters params = new PropertiesParameters();

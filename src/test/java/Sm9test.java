@@ -1,3 +1,4 @@
+import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIFactoryMethod;
 import iaik.security.ec.common.PointEncoders;
 
 import mcl.bn254.Ec1;
@@ -32,10 +33,13 @@ import iaik.security.ec.math.curve.Pairing;
 import iaik.security.ec.math.curve.PairingTypes;
 import iaik.security.ec.math.field.GenericField;
 import iaik.security.ec.math.field.GenericFieldElement;
-import src.api.Element;
-import src.api.Field;
-import src.api.PairingParameters;
-import src.api.PairingParametersGenerator;
+import src.api.*;
+import src.field.curve.CurveElement;
+import src.field.curve.CurveField;
+import src.field.gt.GTFiniteField;
+import src.field.quadratic.QuadraticField;
+import src.field.z.ZrElement;
+import src.field.z.ZrField;
 import src.pairing.f.TypeFCurveGenerator;
 import src.pairing.f.TypeFPairing;
 
@@ -402,64 +406,147 @@ public class Sm9test {
 
     @Test
     public void testJpbc(){
-        int rBits=160;
+        BigInteger xp=new BigInteger("93DE051D62BF718FF5ED0704487D01D6E1E4086909DC3280E8C4E4817C66DDDD",16);
+        BigInteger yp=new BigInteger("21FE8DDA4F21E607631065125C395BBC1C1C00CBFA6024350C464CD70A3EA616",16);
+
+        BigInteger xp21=new BigInteger("3722755292130B08D2AAB97FD34EC120EE265948D19C17ABF9B7213BAF82D65B",16);
+        BigInteger xp22=new BigInteger("85AEF3D078640C98597B6027B441A01FF1DD2C190F5E93C454806C11D8806141",16);
+        BigInteger yp21=new BigInteger("A7CF28D519BE3DA65F3170153D278FF247EFBA98A71A08116215BBA5C999A7C7",16);
+        BigInteger yp22=new BigInteger("17509B092E845C1266BA0D262CBEE6ED0736A96FA347C8BD856DC76B84EBEB96",16);
+
+        BigInteger q=new BigInteger("B640000002A3A6F1D603AB4FF58EC74521F2934B1A7AEEDBE56F9B27E351457D",16);
+
+        BigInteger ks= new BigInteger("0130E78459D78545CB54C587E02CF480CE0B66340F319F348A1D5B1F2DC5F4",16);
+        BigInteger a1=new BigInteger("29DBA116152D1F786CE843ED24A3B573414D2177386A92DD8F14D65696EA5E32",16);
+        BigInteger a2=new BigInteger("9F64080B3084F733E48AFF4B41B565011CE0711C5E392CFB0AB1B6791B94C408",16);
+        BigInteger a3=new BigInteger("41E00A53DDA532DA1A7CE027B7A46F741006E85F5CDFF0730E75C05FB4E3216D",16);
+        BigInteger a4=new BigInteger("69850938ABEA0112B57329F447E3A0CBAD3E2FDB1A77F335E89E1408D0EF1C25",16);
+
+        BigInteger t2=new BigInteger("291FE3CAC8F58AD2DC462C8D4D578A94DAFD5624DDC28E328D2936688A86CF1A",16);
+        BigInteger xa=new BigInteger("A5702F05CF1315305E2D6EB64B0DEB923DB1A0BCF0CAFF90523AC8754AA69820",16);
+        BigInteger xb=new BigInteger("78559A844411F9825C109F5EE3F52D720DD01785392A727BB1556952B2B013D3",16);
+        BigInteger g0=new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
+
+        SecureRandom random =new SecureRandom();
+
+        Field Fq = new ZrField(random, q);
+        Field Fq2 = new QuadraticField(random, Fq);
+
+        String xbits=xp.toString(2);
+        String[] sarray=xbits.split("");
+        System.out.println(sarray.length);
+        int rBits=256;
         PairingParametersGenerator pairingParametersGenerator=new TypeFCurveGenerator(rBits);
         PairingParameters parameters=pairingParametersGenerator.generate();
 
         System.out.println(parameters.toString());
+
         TypeFPairing pairing=new TypeFPairing(parameters);
 
-        Field G1=pairing.getG1();
-        Field G2=pairing.getG2();
-        Field GT=pairing.getGT();
+        CurveField G1=(CurveField) pairing.getG1();
+        CurveField G2=(CurveField)pairing.getG2();
+        GTFiniteField GT=(GTFiniteField)pairing.getGT();
 
-        BigInteger order1=G1.getOrder();
-        BigInteger order2=G2.getOrder();
-        BigInteger orderT= GT.getOrder();
+        CurveElement in1=G1.newElement();
+        in1.getX().set(xp);
+        in1.getY().set(yp);
+        in1.setInfFlag(0);
+//        CurveElement p=G1.newElement();
+//        p.getX().set(xp);
+//        p.setPointFromX();
+        System.out.println("g1 : "+in1);
 
-        Element in1=G1.newRandomElement();
-        Element in2;
-        in2 = G2.newRandomElement();
+        Point in2x=(Point) Fq2.newElement();
+        Point in2y=(Point) Fq2.newElement();
+
+        in2x.getX().set(xp21);
+        in2x.getY().set(xp22);
+        in2y.getX().set(yp21);
+        in2y.getY().set(yp22);
+
+        CurveElement in2=G2.newElement();
+        in2.getX().set(in2x);
+        in2.getY().set(in2y);
+        in2.setInfFlag(0);
 
 
-        Element inT=GT.newRandomElement();
-        System.out.println(in1.toString());
-        System.out.println(order1);
-        System.out.println(in1.mul(order1));
-        if(in1.mul(order1).isZero())
-        {
-            System.out.println("in1 is gen ");
-        }
-        System.out.println(in2.toString());
-        System.out.println(in2.mul(order1));
-        if(in2.mul(order2).isZero())
-        {
+        System.out.println("g1 is valid : "+in1.isValid());
+        System.out.println("g1 is generator :"+in1.duplicate().mul(G1.getOrder()).isZero());
+        System.out.println(xp);
+        System.out.println(yp);
+        System.out.println(in1);
+        System.out.println("g1 *t2 :"+in1.duplicate().mul(t2));
+        System.out.println("g1 *t2 x :"+xa);
+        System.out.println("g1 *t2 y:"+xb);
 
-            System.out.println(in2.toString()+"in2 is gen ");
-        }
-        System.out.println(inT.toString());
-        System.out.println(inT.mul(order1));
+        System.out.println(xp21);
+        System.out.println(xp22);
+        System.out.println(yp21);
+        System.out.println(yp22);
+        System.out.println(in2);
+        System.out.println(a1);
+        System.out.println(a2);
+        System.out.println(a3);
+        System.out.println(a4);
 
-        if (inT.pow(orderT).isOne())
-        {
-            System.out.println("inT is gen");
-        }
-        if(order1.equals(order2))
-        {
-            System.out.println("g1 g2 order is equal");
-        }
-        if(order1.equals(orderT))
-        {
-            System.out.println("g1 gt order is equal");
-        }
-        if(G1.isOrderOdd())
-        {
-            System.out.println("g1 order  odd");
-        }
-        if(G2.isOrderOdd())
-        {
-            System.out.println("g1 order  odd");
-        }
+        System.out.println(in2.duplicate().mul(ks));
+
+        Element ppubs=in2.duplicate().mul(ks);
+
+        System.out.println("g2 is valid :"+in2.isValid());
+
+        System.out.println("g2 is generator :"+in2.duplicate().mul(G2.getOrder()).isZero());
+
+        System.out.println(pairing.pairing(in1,ppubs));
+        System.out.println(g0);
+
+//        BigInteger order1=G1.getOrder();
+//        BigInteger order2=G2.getOrder();
+//        BigInteger orderT= GT.getOrder();
+//
+//        Element in1=G1.newRandomElement();
+//        Element in2;
+//        in2 = G2.newRandomElement();
+//
+//
+//        Element inT=GT.newRandomElement();
+//        System.out.println(in1.toString());
+//        System.out.println(order1);
+//        System.out.println(in1.mul(order1));
+//        if(in1.mul(order1).isZero())
+//        {
+//            System.out.println("in1 is gen ");
+//        }
+//        System.out.println(in2.toString());
+//        System.out.println(in2.mul(order1));
+//        if(in2.mul(order2).isZero())
+//        {
+//
+//            System.out.println(in2.toString()+"in2 is gen ");
+//        }
+//        System.out.println(inT.toString());
+//        System.out.println(inT.mul(order1));
+//
+//        if (inT.pow(orderT).isOne())
+//        {
+//            System.out.println("inT is gen");
+//        }
+//        if(order1.equals(order2))
+//        {
+//            System.out.println("g1 g2 order is equal");
+//        }
+//        if(order1.equals(orderT))
+//        {
+//            System.out.println("g1 gt order is equal");
+//        }
+//        if(G1.isOrderOdd())
+//        {
+//            System.out.println("g1 order  odd");
+//        }
+//        if(G2.isOrderOdd())
+//        {
+//            System.out.println("g1 order  odd");
+//        }
 
     }
     public static void assertBool(String msg, Boolean b) {
@@ -475,5 +562,9 @@ public class Sm9test {
         } else {
             System.out.println("NG : " + msg + ", lhs = " + lhs + ", rhs = " + rhs);
         }
+    }
+
+    public static void out(String x){
+        System.out.println(x);
     }
 }
