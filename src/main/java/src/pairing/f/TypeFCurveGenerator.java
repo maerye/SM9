@@ -120,6 +120,7 @@ public class TypeFCurveGenerator implements PairingParametersGenerator {
         // Store parameters
         PropertiesParameters params = new PropertiesParameters();
         params.put("type", "f");
+        params.put("x",x.toString());
         params.put("q", q.toString());
         params.put("r", r.toString());
         params.put("b", b.toString());

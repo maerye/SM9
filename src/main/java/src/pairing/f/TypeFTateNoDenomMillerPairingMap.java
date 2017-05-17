@@ -115,7 +115,7 @@ public class TypeFTateNoDenomMillerPairingMap extends AbstractMillerPairingMap {
         // u0 x^4 + u1 x^5
         // - alpha u2 - alpha u3 x - alpha u4 x^2 - alpha u5 x^3
         // and
-        // x^4 (u0 + u1 x^1 + ... + u5 x^5) =
+        // x^3 (u0 + u1 x^1 + ... + u5 x^5) =
         // u0 x^3 + u1 x^4 + u2 x^5
         // - alpha u3 - alpha u4 x - alpha u5 x^2
 

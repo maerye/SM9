@@ -320,7 +320,7 @@ public interface Element extends ElementPow {
      * Prepare to exponentiate this element and returns pre-processing information.
      *
      * @return the pre-processing information used to execute the exponentation of this element.
-     * @see it.unisa.dia.gas.jpbc.ElementPowPreProcessing
+     *
      */
     ElementPowPreProcessing getElementPowPreProcessing();
 

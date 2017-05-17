@@ -25,6 +25,7 @@ import java.util.List;
 public class TypeFPairing extends AbstractPairing {
     protected PairingParameters curveParams;
 
+    protected BigInteger x;
     protected BigInteger q;
     protected BigInteger r;
     protected BigInteger b;
@@ -74,6 +75,7 @@ public class TypeFPairing extends AbstractPairing {
         beta = curveParams.getBigInteger("beta");
         alpha0 = curveParams.getBigInteger("alpha0");
         alpha1 = curveParams.getBigInteger("alpha1");
+        x=curveParams.getBigInteger("x");
     }
 
 
@@ -182,6 +184,7 @@ public class TypeFPairing extends AbstractPairing {
     }
 
     protected void initMap() {
-        pairingMap = new TypeFTateNoDenomMillerPairingMap(this);
+        //pairingMap = new TypeFTateNoDenomMillerPairingMap(this);
+        pairingMap=new TypeFRatePairingMap(this);
     }
 }

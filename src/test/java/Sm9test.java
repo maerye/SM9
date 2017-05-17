@@ -490,15 +490,27 @@ public class Sm9test {
         System.out.println(a4);
 
         System.out.println(in2.duplicate().mul(ks));
-
         Element ppubs=in2.duplicate().mul(ks);
 
         System.out.println("g2 is valid :"+in2.isValid());
 
         System.out.println("g2 is generator :"+in2.duplicate().mul(G2.getOrder()).isZero());
 
-        System.out.println(pairing.pairing(in1,ppubs));
-        System.out.println(g0);
+        Element e=pairing.pairing(in1,ppubs);
+
+        System.out.println("e:"+e);
+        System.out.println("g0:"+g0);
+
+        BigInteger a=new BigInteger("12345");
+        Element g1a=in1.duplicate().mul(a);
+        Element ea=pairing.pairing(g1a,ppubs);
+
+        //assertEquals(e.pow(a),ea);
+
+        System.out.println( "e^a:"+e.pow(a));
+        System.out.println("pair ea"+ea);
+
+
 
 //        BigInteger order1=G1.getOrder();
 //        BigInteger order2=G2.getOrder();
