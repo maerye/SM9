@@ -37,6 +37,7 @@ import src.api.*;
 import src.field.curve.CurveElement;
 import src.field.curve.CurveField;
 import src.field.gt.GTFiniteField;
+import src.field.poly.PolyModField;
 import src.field.quadratic.QuadraticField;
 import src.field.z.ZrElement;
 import src.field.z.ZrField;
@@ -425,12 +426,39 @@ public class Sm9test {
         BigInteger t2=new BigInteger("291FE3CAC8F58AD2DC462C8D4D578A94DAFD5624DDC28E328D2936688A86CF1A",16);
         BigInteger xa=new BigInteger("A5702F05CF1315305E2D6EB64B0DEB923DB1A0BCF0CAFF90523AC8754AA69820",16);
         BigInteger xb=new BigInteger("78559A844411F9825C109F5EE3F52D720DD01785392A727BB1556952B2B013D3",16);
-        BigInteger g0=new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
 
+        BigInteger g0=new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
+        BigInteger g1=new BigInteger("84B87422330D7936EABA1109FA5A7A7181EE16F2438B0AEB2F38FD5F7554E57A",16);
+        BigInteger g2=new BigInteger("4C744E69C4A2E1C8ED72F796D151A17CE2325B943260FC460B9F73CB57C9014B",16);
+        BigInteger g3=new BigInteger("B3129A75D31D17194675A1BC56947920898FBF390A5BF5D931CE6CBB3340F66D",16);
+        BigInteger g4=new BigInteger("93634F44FA13AF76169F3CC8FBEA880ADAFF8475D5FD28A75DEB83C44362B439",16);
+        BigInteger g5=new BigInteger("1604A3FCFA9783E667CE9FCB1062C2A5C6685C316DDA62DE0548BAA6BA30038B",16);
+        BigInteger g6=new BigInteger("5A1AE172102EFD95DF7338DBC577C66D8D6C15E0A0158C7507228EFB078F42A6",16);
+        BigInteger g7=new BigInteger("67E0E0C2EED7A6993DCE28FE9AA2EF56834307860839677F96685F2B44D0911F",16);
+        BigInteger g8=new BigInteger("A01F2C8BEE81769609462C69C96AA923FD863E209D3CE26DD889B55E2E3873DB",16);
+        BigInteger g9=new BigInteger("38BFFE40A22D529A0C66124B2C308DAC9229912656F62B4FACFCED408E02380F",16);
+        BigInteger g10=new BigInteger("28B3404A61908F5D6198815C99AF1990C8AF38655930058C28C21BB539CE0000",16);
+        BigInteger g11=new BigInteger("4E378FB5561CD0668F906B731AC58FEE25738EDF09CADC7A29C0ABC0177AEA6D",16);
+        BigInteger r=new BigInteger("033C8616B06704813203DFD00965022ED15975C662337AED648835DC4B1CBE",16);
+
+        BigInteger g12r1=new BigInteger("1F96B08E97997363911314705BFB9A9DBB97F75553EC90FBB2DDAE53C8F68E42",16);
+        BigInteger g12r2=new BigInteger("6A814AAF475F128AEF43A128E37F80154AE6CB92CAD7D1501BAE30F750B3A9BD",16);
+        BigInteger g12r3=new BigInteger("898D60848026B7EFB8FCC1B2442ECF0795F8A81CEE99A6248F294C82C90D26BD",16);
+        BigInteger g12r4=new BigInteger("44643CEAD40F0965F28E1CD2895C3D118E4F65C9A0E3E741B6DD52C0EE2D25F5",16);
+        BigInteger g12r5=new BigInteger("0656FCB663D24731E80292188A2471B8B68AA993899268499D23C89755A1A897",16);
+        BigInteger g12r6=new BigInteger("4F8624EB435B838CCA77B2D0347E65D5E46964412A096F4150D8C5EDE5440DDF",16);
+        BigInteger g12r7=new BigInteger("3F012DB04BA59FE88DB889321CC2373D4C0C35E84F7AB1FF33679BCA575D6765",16);
+        BigInteger g12r8=new BigInteger("A543D25609AE943920679194ED30328BB33FD15660BDE485C6B79A7B32B01398",16);
+        BigInteger g12r9=new BigInteger("8EAF5D179A1836B359A9D1D9BFC19F2EFCDB829328620962BD3FDF15F2567F58",16);
+        BigInteger g12r10=new BigInteger("30DADC5CD9E207AEE32209F6C3CA3EC0D800A1A42D33C73153DED47C70A39D2E",16);
+        BigInteger g12r11=new BigInteger("815AEBA217AD502DA0F48704CC73CABB3C06209BD87142E14CBD99E8BCA1680F",16);
+        BigInteger g12r12=new BigInteger("81377B8FDBC2839B4FA2D0E0F8AA6853BBBE9E9C4099608F8612C6078ACD7563",16);
+
+        BigInteger pair0=new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
         SecureRandom random =new SecureRandom();
 
-        Field Fq = new ZrField(random, q);
-        Field Fq2 = new QuadraticField(random, Fq);
+//        Field Fq = new ZrField(random, q);
+//        Field Fq2 = new QuadraticField(random, Fq);
 
         String xbits=xp.toString(2);
         String[] sarray=xbits.split("");
@@ -446,6 +474,81 @@ public class Sm9test {
         CurveField G1=(CurveField) pairing.getG1();
         CurveField G2=(CurveField)pairing.getG2();
         GTFiniteField GT=(GTFiniteField)pairing.getGT();
+        Field Fq2=pairing.getFq2();
+        Point beta=(Point) Fq2.newElement();
+        beta.getX().set(0);
+        beta.getY().set(1);
+        Element tt=beta.duplicate();
+        tt.invert();
+
+        Element mul=tt.mul(beta);
+
+        Polynomial g12=(Polynomial) pairing.getFp12().newElement();
+        Polynomial g12sextic=pairing.getFq12sextic().newElement();
+
+        Polynomial tempFq4=(Polynomial)pairing.getFq4().newElement();
+
+        Point temp = (Point) G2.getTargetField().newElement();
+        temp.getX().set(g0);
+        temp.getY().set(g1);
+        tempFq4.getCoefficient(0).set(temp);
+        g12sextic.getCoefficient(0).set(temp);
+
+        temp.getX().set(g2);
+        temp.getY().set(g3);
+        tempFq4.getCoefficient(1).set(temp);
+        g12sextic.getCoefficient(1).set(temp);
+        g12.getCoefficient(0).set(tempFq4);
+
+        temp.getX().set(g4);
+        temp.getY().set(g5);
+        g12sextic.getCoefficient(2).set(temp);
+        tempFq4.getCoefficient(0).set(temp);
+        temp.getX().set(g6);
+        temp.getY().set(g7);
+        g12sextic.getCoefficient(3).set(temp);
+        tempFq4.getCoefficient(1).set(temp);
+
+        g12.getCoefficient(1).set(tempFq4);
+
+        temp.getX().set(g8);
+        temp.getY().set(g9);
+        g12sextic.getCoefficient(4).set(temp);
+        tempFq4.getCoefficient(0).set(temp);
+        temp.getX().set(g10);
+        temp.getY().set(g11);
+        g12sextic.getCoefficient(5).set(temp);
+        tempFq4.getCoefficient(1).set(temp);
+        g12.getCoefficient(2).set(tempFq4);
+
+        for(int i=0;i<3;i++)
+        {
+            for(int j=0;j<2;j++)
+            {
+                ((Polynomial)g12.getCoefficient(i)).getCoefficient(j).mul(temp.set(1));
+            }
+        }
+
+
+
+        System.out.println("g12:"+g12);
+        System.out.println("g12 ^ r:"+g12.duplicate().pow(r));
+        System.out.println("g12sextic:"+g12sextic);
+        System.out.println("g12sextic ^ r:"+g12sextic.duplicate().pow(r));
+
+        System.out.println("g12r1 :"+g12r1);
+        System.out.println("g12r2 :"+g12r2);
+        System.out.println("g12r3 :"+g12r3);
+        System.out.println("g12r4 :"+g12r4);
+        System.out.println("g12r5 :"+g12r5);
+        System.out.println("g12r6 :"+g12r6);
+        System.out.println("g12r7 :"+g12r7);
+        System.out.println("g12r8 :"+g12r8);
+        System.out.println("g12r9 :"+g12r9);
+        System.out.println("g12r10 :"+g12r10);
+        System.out.println("g12r11 :"+g12r11);
+        System.out.println("g12r12 :"+g12r12);
+
 
         CurveElement in1=G1.newElement();
         in1.getX().set(xp);
@@ -559,6 +662,11 @@ public class Sm9test {
 //        {
 //            System.out.println("g1 order  odd");
 //        }
+
+    }
+
+    @Test
+    public void testField(){
 
     }
     public static void assertBool(String msg, Boolean b) {

@@ -1,10 +1,8 @@
 package src.pairing.f;
 
 
-import src.api.Element;
-import src.api.Field;
-import src.api.PairingParameters;
-import src.api.Point;
+import mcl.bn254.Fp12;
+import src.api.*;
 import src.field.curve.CurveField;
 import src.field.gt.GTFiniteField;
 import src.field.poly.PolyElement;
@@ -39,7 +37,8 @@ public class TypeFPairing extends AbstractPairing {
 
     protected Field Fq, Fq2x;
     protected Field Fq2;
-    protected PolyModField Fq12;
+    protected Field Fq4x;
+    protected PolyModField Fq4,Fq12,Fq12sextic;
     protected CurveField Eq, etwist;
 
 
@@ -97,6 +96,8 @@ public class TypeFPairing extends AbstractPairing {
         tmp.getY().set(alpha1);
         negAlpha = tmp;
 
+
+
         PolyElement irreduciblePoly = (PolyElement) Fq2x.newElement();
         List<Element> irreduciblePolyCoeff = irreduciblePoly.getCoefficients();
         irreduciblePolyCoeff.add(negAlpha.duplicate());
@@ -105,7 +106,30 @@ public class TypeFPairing extends AbstractPairing {
         irreduciblePolyCoeff.add(Fq2.newOneElement());
 
         // init Fq12
-        Fq12 = initPolyMod(irreduciblePoly);
+        Fq12sextic = initPolyMod(irreduciblePoly);
+
+        PolyElement irreduciblePoly2 = (PolyElement) Fq2x.newElement();
+        List<Element> irreduciblePolyCoeff2 = irreduciblePoly2.getCoefficients();
+        irreduciblePolyCoeff2.add(negAlpha.duplicate());
+        irreduciblePolyCoeff2.add(Fq2.newElement());
+        irreduciblePolyCoeff2.add(Fq2.newOneElement());
+        Fq4=new PolyModField(random,irreduciblePoly2);
+        Fq4x=new PolyField(random,Fq4);
+
+
+        Polynomial v=(Polynomial) Fq4.newElement();
+        v.getCoefficient(1).set(1);
+        v.negate();
+
+        PolyElement irreduc2=(PolyElement)Fq4x.newElement();
+        List<Element> irreduc2coeff=irreduc2.getCoefficients();
+        irreduc2coeff.add(v);
+        irreduc2coeff.add(Fq4.newElement());
+        irreduc2coeff.add(Fq4.newElement());
+        irreduc2coeff.add(Fq4.newOneElement());
+
+        Fq12=new PolyModField(random,irreduc2);
+
 
         negAlphaInv = negAlpha.negate().duplicate().invert();
 
@@ -132,7 +156,7 @@ public class TypeFPairing extends AbstractPairing {
         */
         tateExp = q.multiply(q).subtract(BigInteger.ONE).multiply(q).multiply(q).add(BigInteger.ONE).divide(r);
 
-        PolyModElement polyModElement = Fq12.newElement();
+        PolyModElement polyModElement = Fq12sextic.newElement();
         polyModElement.getCoefficient(1).setToOne();
         polyModElement.pow(q);
         polyModElement.pow(q);
@@ -182,6 +206,11 @@ public class TypeFPairing extends AbstractPairing {
     protected Field initGT() {
         return new GTFiniteField(random, r, pairingMap, Fq12);
     }
+
+    public  PolyModField getFp12(){return Fq12;}
+    public  PolyModField getFq12sextic(){return Fq12sextic;}
+    public PolyModField getFq4(){return Fq4;}
+    public Field getFq2(){return Fq2;}
 
     protected void initMap() {
         //pairingMap = new TypeFTateNoDenomMillerPairingMap(this);

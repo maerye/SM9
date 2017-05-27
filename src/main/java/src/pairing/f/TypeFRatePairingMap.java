@@ -1,5 +1,7 @@
 package src.pairing.f;
 
+import com.sun.xml.internal.bind.v2.model.core.EnumLeafInfo;
+import mcl.bn254.Fp;
 import src.api.Element;
 import src.api.Pairing;
 import src.api.Point;
@@ -26,35 +28,26 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
     public Element pairing(Point P, Point Q) {
 
         BigInteger a=pairingdata.x.multiply(BigInteger.valueOf(6)).add(BigInteger.valueOf(2));
+
         Point t=(Point) Q.duplicate();
-        Polynomial f=(Polynomial) pairingdata.Fq12.newOneElement();
-
+        Polynomial f=(Polynomial) pairingdata.Fq12sextic.newOneElement();
+        Element negalphainvert=pairingdata.negAlphaInv;
           for (int i=a.bitLength()-2;i>=0;i--){
-
-            f.square().mul(lineqq(t,P,pairingdata.Fq12));
+            f.square().mul(line(t,t,P,pairingdata.Fq12sextic,negalphainvert));
             t.twice();
             if(a.testBit(i)){
-
-                Element t0=linetq(t,Q,P,pairingdata.Fq12);
-                Element t00=linetq2(t,Q,P,pairingdata.Fq12);
-                Element t1=linerq(t,Q,P,pairingdata.Fq12);
-                boolean b=t1.equals(t00);
-
-                f.mul(linetq(t,Q,P,pairingdata.Fq12));
+                f.mul(line(t,Q,P,pairingdata.Fq12sextic,negalphainvert));
                 t.add(Q);
             }
         }
         Point Q1=fob(Q,pairingdata.q);
         Point Q2=fob2(Q,pairingdata.q);
-        f.mul(linetq(t,Q1,P,pairingdata.Fq12));
+        f.mul(line(t,Q1,P,pairingdata.Fq12sextic,negalphainvert));
         t.add(Q1);
-        f.mul(linetq(t,(Point) Q2.negate(),P,pairingdata.Fq12));
+        f.mul(line(t,(Point) Q2.duplicate().negate(),P,pairingdata.Fq12sextic,negalphainvert));
         t.sub(Q2);
 
-
         return new GTFiniteElement(this,(GTFiniteField) pairingdata.getGT(),tateExp(f));
-
-
 
 
     }
@@ -68,8 +61,8 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
 
     public Element tateExp(Polynomial element) {
 
-        Polynomial x = pairingdata.Fq12.newElement();
-        Polynomial y = pairingdata.Fq12.newElement();
+        Polynomial x = pairingdata.Fq12sextic.newElement();
+        Polynomial y = pairingdata.Fq12sextic.newElement();
 
         qPower(element, y, pairingdata.xPowq8);
         qPower(element, x, pairingdata.xPowq6);
@@ -230,7 +223,87 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
         return l;
     }
 
+    /**
+     *
+     * @param A point at E(Fp2)
+     * @param B point at E(Fp2)
+     * @param C point at E(Fp)
+     * @param Fp12 the Fp12
+     * @return Fp12 Element
+     */
+    public Element line(Point A, Point B, Point C, PolyModField Fp12, Element negalphaInv){
+        Polynomial n1=(Polynomial) Fp12.newElement();
+        Polynomial n2=(Polynomial) Fp12.newElement();
+        Polynomial cx12=(Polynomial) Fp12.newElement();
+        Polynomial cy12=(Polynomial) Fp12.newElement();
 
+        BigInteger cx=C.getX().duplicate().toBigInteger();
+        BigInteger cy=C.getY().duplicate().toBigInteger();
+        cx12.set(cx);
+        cy12.set(cy);
+
+        Polynomial [] A12 =mapToFp12sextic(A,Fp12,negalphaInv);
+         if(A.isEqual(B)){
+
+             n1.set(A12[0].duplicate().square().mul(3).div(A12[1].duplicate().twice()));
+             return cx12.duplicate().sub(A12[0]).mul(n1).sub(cy12).add(A12[1]);
+         }else {
+             Polynomial [] B12 =mapToFp12sextic(B,Fp12,negalphaInv);
+             n2.set(A12[1].duplicate().sub(B12[1]).div(A12[0].duplicate().sub(B12[0])));
+             return cx12.duplicate().sub(B12[0]).mul(n2).sub(cy12).add(B12[1]);
+        }
+    }
+
+    /**
+     *
+     * @param p point at sextic twist curve
+     * @param Fp12 the Fp12 (2,2,3,extension)
+     * @return point at real curve on Fp12
+     */
+
+    private Polynomial[] mapToFp12(Point p,PolyModField Fp12){
+        Element x=p.getX().duplicate();//Fp2
+        Element y=p.getY().duplicate();
+
+        Point fp2temp=(Point) x.getField().newElement();
+        fp2temp.getX().set(1);
+        fp2temp.getY().set(0);
+
+        Polynomial a1=(Polynomial) Fp12.newElement();
+        Polynomial a2=(Polynomial) Fp12.newElement();
+
+        ((Polynomial)a1.getCoefficient(1)).getCoefficient(0).set(fp2temp).mul(x);
+        ((Polynomial)a2.getCoefficient(1)).getCoefficient(1).set(fp2temp).mul(y);
+
+        return new Polynomial[]{a1,a2};
+
+
+
+    }
+
+    /**
+     *
+     * @param p point at E(Fp2)
+     * @param Fp12Sextic the Fp12
+     * @return [x,y] in E(Fp12)
+     */
+    private Polynomial [] mapToFp12sextic(Point p, PolyModField Fp12Sextic,Element negalphaInvert){
+        Element x=p.getX().duplicate().mul(negalphaInvert);//Fp2
+        Element y=p.getY().duplicate().mul(negalphaInvert);
+
+        Point fp2temp=(Point) x.getField().newElement();
+        fp2temp.getX().set(1);
+        fp2temp.getY().set(0);
+
+        Polynomial a1=(Polynomial) Fp12Sextic.newElement();
+        Polynomial a2=(Polynomial) Fp12Sextic.newElement();
+
+        a1.getCoefficient(4).set(fp2temp).mul(x);//???
+        a2.getCoefficient(3).set(fp2temp).mul(y);//???
+
+
+        return new Polynomial[]{a1,a2};
+    }
     /**
      *q is point in Fp2
      */

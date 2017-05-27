@@ -91,7 +91,7 @@ public class TypeFCurveGenerator implements PairingParametersGenerator {
         tmp.getX().setToZero();
         tmp.getY().setToOne();
         f.getCoefficient(0).set(tmp.negate());
-
+      //  f.getCoefficient(0).set(tmp);
 
         //extend F_q^2 using f = x^6 + alpha
         //see if sextic twist contains a subgroup of order r
