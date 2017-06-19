@@ -159,64 +159,6 @@ public class BNPairing {
         return new BNField12(bn, w);
     }
 
-    public BNField12 ate(BNPoint2 Q, BNPoint P) {
-        if (!E.contains(P) || !E2.contains(Q)) {
-            throw new IllegalArgumentException(incompatibleCurves);
-        }
-        BNField12 f = Fp12_1;
-        P = P.normalize();
-        Q = Q.normalize();
-        if (!P.isZero() && !Q.isZero()) {
-            BNParams bn = E.bn;
-            BNPoint2 T = Q;
-            BigInteger ord = bn.t.subtract(_1);
-            for (int i = ord.bitLength() - 2; i >= 0; i--) {
-                BNPoint2 A = T.twice(1);
-                f = f.square().multiply(gl(T, T, A, P));
-                T = A;
-                if (ord.testBit(i)) {
-                    f = f.multiply(gl(T, Q, null, P));
-                    T = T.add(Q);
-                }
-            }
-            f = f.finExp();
-        }
-        return f;
-    }
-
-    public BNField12 opt(BNPoint2 Q, BNPoint P) {
-        if (!E.contains(P) || !E2.contains(Q)) {
-            throw new IllegalArgumentException(incompatibleCurves);
-        }
-        BNField12 f = Fp12_1;
-        P = P.normalize();
-        Q = Q.normalize();
-        if (!P.isZero() && !Q.isZero()) {
-            BNParams bn = E.bn;
-            BNPoint2 T = Q;
-            BigInteger ord = bn.optOrd; // 6u+2
-            for (int i = ord.bitLength() - 2; i >= 0; i--) {
-                BNPoint2 A = T.twice(1);
-                f = f.square().multiply(gl(T, T, A, P));
-                T = A;
-                if (ord.testBit(i)) {
-                    f = f.multiply(gl(T, Q, null, P));
-                    T = T.add(Q);
-                }
-            }
-            // now T = [6u+2]Q
-            // optimal pairing: f = f_{6u+2,Q}(P)*l_{Q3,-Q2}(P)*l_{-Q2+Q3,Q1}(P)*l_{Q1-Q2+Q3,[6u+2]Q}(P)
-            BNPoint2 Q1 = Q.frobex(1);
-            BNPoint2 Q2 = Q.frobex(2).negate();
-            BNPoint2 Q3 = Q.frobex(3);
-            BNPoint2 Q4 = Q2.add(Q3);
-            BNPoint2 Q5 = Q4.add(Q1);
-            f = f.multiply(gl(Q2, Q3, null, P)).multiply(gl(Q4, Q1, null, P)).multiply(gl(Q5, T, null, P));
-            f = f.finExp();
-        }
-        return f;
-    }
-
     protected BNField12 g = null;
 
     public void gSet(BNField12 g) {

@@ -1,6 +1,5 @@
 package src;
 
-import mcl.bn254.*;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.crypto.DataLengthException;
 import org.bouncycastle.math.myec.bncurves.*;
@@ -17,10 +16,7 @@ import java.util.Arrays;
  * Created by mzy on 2017/4/26.
  */
 public class Sm9Engine {
-    static {
-        System.loadLibrary("bn254_if_wrap");
-        BN254.SystemInit();
-    }
+
 
     private String id;
     private int k1len,k2len;
@@ -73,9 +69,6 @@ public class Sm9Engine {
 
     private byte [] processEncrypt(byte []block,KeyGenerationCenter kgc) throws  Exception{
         byte hid = kgc.hid2;
-//        Ec1 g1 = kgc.getG1();
-//        Ec2 g2=kgc.getG2();
-//        Ec1 ppube = kgc.getPpube();
 
         BNPoint g1,ppube,c1;
         BNPoint2 g2;
@@ -85,10 +78,7 @@ public class Sm9Engine {
         ppube=kgc.getPpube();
 
         BigInteger N = kgc.getN();
-        //Ec1 qb = new Ec1(g1);
         byte [] k1,k2,c2,c1b;
-        //Ec1 c1;
-
         byte [] idb=this.id.getBytes();
         byte[] merge=new byte[idb.length+1];
         System.arraycopy(idb,0,merge,0,idb.length);
@@ -103,16 +93,6 @@ public class Sm9Engine {
             do {
                 r=new BigInteger(N.bitLength(),new SecureRandom());
             }while(r.compareTo(N)>=0||r.compareTo(BigInteger.ONE)<0);
-
-//            c1=new Ec1(qb);
-//            c1.mul(new Mpz(r.toString(10)));
-//            boolean b1=c1.isValid();
-//            c1b=Sm9Util.ec1ToBytes(c1);
-//            Fp12 g=new Fp12();
-//            g.pairing(g2,ppube);
-//            Fp12 w=new Fp12(g);
-//            w.power(new Mpz(r.toString(10)));
-//            byte[] wb1=Sm9Util.Fp12ToBytes(w);
             c1=qb.multiply(r);
             c1b=Sm9Util.bnpointToBytes(c1);
             BNPairing pairing=new BNPairing(curve2);
@@ -145,7 +125,6 @@ public class Sm9Engine {
                 sm4cipher.init(Cipher.ENCRYPT_MODE,key);
                 int s=sm4cipher.getOutputSize(block.length);
                 int insize=sm4cipher.getBlockSize();
-                System.out.println(insize);
                 c2=new byte[s];
                 c2=sm4cipher.doFinal(block,0,block.length);
             }
@@ -182,11 +161,9 @@ public class Sm9Engine {
         KeyGenerationCenter kgc=KeyGenerationCenter.getInstance();
         BNCurve curve1=kgc.getCurve1();
         BNCurve2 curve2=kgc.getCurve2();
-
         ASN1Sequence asn1Obj = ASN1Sequence.getInstance(block);
         ASN1Integer c1x_encoded =ASN1Integer.getInstance(asn1Obj.getObjectAt(0)) ;
         ASN1Integer c1y_encoded =ASN1Integer.getInstance(asn1Obj.getObjectAt(1)) ;
-
         DEROctetString c2_encoded = (DEROctetString) asn1Obj.getObjectAt(3);
         DEROctetString c3_encoded = (DEROctetString) asn1Obj.getObjectAt(2);
 

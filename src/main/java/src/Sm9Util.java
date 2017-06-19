@@ -1,8 +1,5 @@
 package src;
 
-import mcl.bn254.Ec1;
-import mcl.bn254.Fp;
-import mcl.bn254.Fp12;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SM3Digest;
 import org.bouncycastle.math.myec.bncurves.BNField12;
@@ -133,35 +130,8 @@ public class Sm9Util {
         return buffer.array();
 
     }
-    public static byte[] Fp12ToBytes(Fp12 fp12) {
-        String [] x=fp12.toString().split(",");
-        String charTdel="[]\n ";
-        String pat="["+ Pattern.quote(charTdel)+"]";
-        String temp;
-        BigInteger []tempBig=new BigInteger[x.length];
-        for(int i=0;i<x.length;i++)
-        {
-            temp=x[i].replaceAll(pat,"");
-            tempBig[i]=new BigInteger(temp,10);
-        }
-        ByteBuffer buffer=ByteBuffer.allocate(BIGINTEGER_LENGTH*12);
-        for(int i=tempBig.length-1;i>=0;i--)
-        {
-              buffer.put(bigIntegerTobytes(tempBig[i]));
-        }
 
-        return buffer.array();
-    }
-    public static byte [] ec1ToBytes (Ec1 p){
-        Fp x=p.getX();
-        Fp y=p.getY();
-        BigInteger xb=new BigInteger(x.toString(),10);
-        BigInteger yb=new BigInteger(y.toString(),10);
-        byte [] a=bigIntegerTobytes(xb);
-        byte [] b=bigIntegerTobytes(yb);
-        byte [] merge=byteMerger(a,b);
-        return merge;
-    }
+
     public static byte[] byteMerger(byte[] byte_1, byte[] byte_2){
         byte[] byte_3 = new byte[byte_1.length+byte_2.length];
         System.arraycopy(byte_1, 0, byte_3, 0, byte_1.length);

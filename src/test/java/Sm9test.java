@@ -1,6 +1,5 @@
-import mcl.bn254.Ec1;
-import mcl.bn254.Fp;
-import mcl.bn254.Fp12;
+
+import org.bouncycastle.jcajce.provider.asymmetric.ec.KeyFactorySpi;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.myec.bncurves.*;
 import org.junit.Before;
@@ -12,6 +11,7 @@ import java.math.BigInteger;
 import java.security.Key;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static junit.framework.TestCase.assertEquals;
@@ -39,45 +39,12 @@ public class Sm9test {
             Security.addProvider(bcp);
         }
     }
-    @Test
-    public void test () throws Exception {
-
-        KeyGenerationCenter kgc =new KeyGenerationCenter();
-        Sm9SignPrivateKey sm9SignPrivateKey =kgc.generateSignPrivatekey("mama@123.com");
-
-        Sm9Curve sm9Curve =Sm9Curve.getInstance();
-        Sm9Curve2 sm9Curve2 = new Sm9Curve2(sm9Curve);
-        BNPoint p1 =sm9Curve.getBnCurve().kG(new BigInteger("16",10));
-        assert (p1.equals(sm9Curve.getG().twice(4)));
-
-        BNPoint2 point2 =sm9Curve2.getBNCurve2().kG(BigInteger.ONE);
-        assert (point2.equals(sm9Curve2.getBNCurve2().getGt()));
-
-
-        BNPoint2 point3 =sm9Curve2.getBNCurve2().kG(new BigInteger("16",10));
-        assert (point3.equals(sm9Curve2.getBNCurve2().getGt().twice(4)));
-
-        assert (sm9Curve2.getGt().multiply(sm9Curve.getN()).isZero());
-        assert (!sm9Curve2.getGt().multiply(new BigInteger("100",10)).isZero());
-
-        assert (sm9Curve2.getBNCurve2().contains(sm9Curve2.getGt()));
-
-        BNPoint2 point21 =sm9Curve2.getBNCurve2().pointFactory(new SecureRandom());
-        assert (sm9Curve2.getBNCurve2().contains(point21));
-
-        BNPairing pr=new BNPairing(sm9Curve2.getBNCurve2());
-        BNPoint p11=sm9Curve.getBnCurve().pointFactory(new SecureRandom());
-        BNPoint2 p22=sm9Curve2.getBNCurve2().pointFactory(new SecureRandom());
-        BNField12 e=pr.ate(p22,p11);
-      /// assert (Sm9Util.bnField12ToBytes(e).length==32*12);
-
-    }
-
 
     @Test
     public void testSign ()throws Exception
     {
-
+       BigInteger u = new BigInteger("110000010000000000000000000000000000000000001000000000001000011", 2);
+        System.out.println(u.bitLength()+" "+u.toString(16));
         Sm9SignPrivateKey privateKey = kgc.generateSignPrivatekey(id);
         Sm9Signer signer =new Sm9Signer();
         signer.initSign(privateKey);
@@ -89,6 +56,39 @@ public class Sm9test {
         String x="dsad";
         byte []xs=x.getBytes();
         assertEquals(x,new String(xs));
+    }
+    @Test
+    public void testSignBigmessage() throws Exception{
+        int [] msl=new int[]{10000,500,1000,5000,10000,50000,100000,250000,500000,100};
+        long[] temp;
+        for(int i =0;i<msl.length;i++) {
+            temp = testSign(10, msl[i]);
+            System.out.println("length :"+msl[i] +" " +temp[0] + " " + temp[1]);
+        }
+
+    }
+    public long[] testSign(int round, int messagelen) throws Exception{
+        byte [] message=new byte [messagelen];
+        Sm9SignPrivateKey privateKey = kgc.generateSignPrivatekey(id);
+        for (int i=0;i<messagelen;i++){
+            message[i]=0x4f;
+        }
+        Sm9Signer signer =new Sm9Signer();
+        Signature signature=null;
+        long start=System.currentTimeMillis();
+        for(int i=0;i<round;i++) {
+            signer.initSign(privateKey);
+            signature = signer.generateSignature(message);
+        }
+        long end1=System.currentTimeMillis();
+        for(int i=0;i<round;i++) {
+            signer.initVerify(id);
+            signer.verifySignature(message, signature);
+        }
+        long end=System.currentTimeMillis();
+
+        return new long[]{(end1-start)/round,(end-end1)/round};
+
     }
     @Test
     public void testEncapsulate ()throws Exception
@@ -110,14 +110,88 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,0);
-        byte [] m="0123456789abcdeffedcba9876543210".getBytes();
-        byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
+        String s="0123456789abcdeffedcba9876543210";
+        String [] ss=new String[15];
+        byte [] m=s.getBytes();
+        byte []ciphertext=null;
+        byte[] mp=null;
+        long start=System.currentTimeMillis();
+        sm9Engine.initEncrypt(true,id,16,32,1);
+        for(int i=0;i<15;i++)
+        {
+           ciphertext=sm9Engine.processBlock(m,0,m.length);
+        }
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
-        byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
+        long end=System.currentTimeMillis();
+
+
+
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
+        for(int i=0;i<15;i++) {
+            mp = sm9Engine.processBlock(ciphertext, 0, ciphertext.length);
+        }
+        long end1=System.currentTimeMillis();
+        System.out.println("mb:"+m.length);
+        System.out.println("encrypt time:"+(end-start));
+        System.out.println("decrypt time:"+(end1-end));
 
         assertArrayEquals(m,mp);
+
+        sm9Engine.initEncrypt(true,id,16,32,1);
+        byte [] m2="0123456789abcdeffedcba9876543210".getBytes();
+        byte []ciphertext2=sm9Engine.processBlock(m,0,m.length);
+
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
+        byte []mp2=sm9Engine.processBlock(ciphertext2,0,ciphertext2.length);
+
+        assertArrayEquals(m2,mp2);
+    }
+    @Test
+    public void testEncrptall()throws Exception{
+        int [] length=new int[]{3,10,15,20,25,30,50,55,60,65};
+        int rounds=5;
+        long [] temp;
+        long tempenc,tempdec;
+        for(int i=0;i<length.length;i++)
+        {
+            tempenc=0;
+            tempdec=0;
+            for(int j=0;j<rounds;j++){
+                System.out.println("round :"+j);
+                temp=testEnc(length[i]);
+                tempenc+=temp[0];
+                tempdec+=temp[1];
+            }
+            System.out.println("length : "+length[i]*32+"enc:"+tempenc/rounds+"dec : "+tempdec/rounds);
+        }
+    }
+    public long [] testEnc(int round)throws Exception{
+        kgc= KeyGenerationCenter.getInstance();
+        Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
+        Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
+        Sm9Engine sm9Engine=new Sm9Engine(cipher);
+        String s="0123456789abcdeffedcba9876543210";
+        String s1="0123456789abcdef";
+        byte [] m=s.getBytes();
+        byte []ciphertext=null;
+        byte[] mp=null;
+        long start=System.currentTimeMillis();
+        sm9Engine.initEncrypt(true,id,16,32,0);
+        for(int i=0;i<round;i++)
+        {
+            ciphertext=sm9Engine.processBlock(m,0,m.length);
+        }
+
+        long end=System.currentTimeMillis();
+
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
+        for(int i=0;i<round;i++) {
+            mp = sm9Engine.processBlock(ciphertext, 0, ciphertext.length);
+        }
+        long end1=System.currentTimeMillis();
+
+        return new long[]{(end-start),(end1-end)};
+
     }
     @Test
     public void testh() {
@@ -154,7 +228,7 @@ public class Sm9test {
     }
 
     @Test
-    public void testKDf(){
+    public void testKDF(){
         BigInteger merge=new BigInteger("1EDEE2C3F465914491DE44CEFB2CB434AB02C308D9DC5E2067B4FED5AAAC8A0F1C9B4C43" +
                 "5ECA35AB83BB734174C0F78FDE81A53374AFF3B3602BBC5E37BE9A4C8EAB0CD6D0C95A6B" +
                 "BB7051AC848FDFB9689E5E5C486B1294557189B338B53B1D78082BB40152DC35AC774442" +
@@ -171,19 +245,7 @@ public class Sm9test {
         byte [] k=Sm9Util.KDF(merge.toByteArray(),0x0100);
         assertArrayEquals(new BigInteger("4FF5CF86D2AD40C8F4BAC98D76ABDBDE0C0E2F0A829D3F911EF5B2BCE0695480",16).toByteArray(),k);
     }
-//    @Test
-//    public void testEc1tobytes()
-//    {
-//        /*BigInteger cx=new BigInteger("1EDEE2C3F465914491DE44CEFB2CB434AB02C308D9DC5E2067B4FED5AAAC8A0F",16);
-//        BigInteger cy=new BigInteger("1C9B4C435ECA35AB83BB734174C0F78FDE81A53374AFF3B3602BBC5E37BE9A4C",16);
-//        Ec1  c = new Ec1(new Fp(cx.toString(10)),new Fp(cy.toString(10)));*/
-//        kgc=KeyGenerationCenter.getInstance();
-//       Ec1 c=new Ec1(kgc.getG1());
-//        byte [] cb=Sm9Util.ec1ToBytes(c);
-//        System.out.println(new BigInteger(cb).toString(16));
-//
-//        System.out.println(cb.length);
-//    }
+
     @Test
     public void testlibrary(){
         BNPoint g1=sm9Curve.getG();
@@ -218,17 +280,6 @@ public class Sm9test {
         assertEqual("check g1 * c = g1 * a + g1 * b",p1,p11);
 
         BNPairing pairing =new BNPairing(sm9Curve2.getBNCurve2());
-        BNField12 e=pairing.ate(g2,g1);
-
-        System.out.println("e = "+e);
-        BNField12 er=e.exp(N);
-
-        assertBool("order of e == N",er.isOne());
-        BNField12 ee1=e.exp(BigInteger.ONE);
-        assertEqual("e = e^1",e,ee1);
-
-        BNField12 ee=e.multiply(e);
-        assertEqual("e *e=e^2",ee,e.exp(new BigInteger("2")));
 
         BNPoint2 g2a=g2.multiply0(a);//???
 
@@ -246,23 +297,6 @@ public class Sm9test {
 //        assertEqual("g22 = g2tw :",g22,g2tw);
 
 
-        BNField12 e2=pairing.ate(g2a,g1);
-        BNField12 e22=e.exp(a);
-        assertEqual("e(g2 * a, g1) = e(g2, g1)^a",e2,e22);
-
-        BNPoint g1a=g1.multiply(a);
-        BNField12 ex=pairing.ate(g2,g1a);
-        assertEqual("e(g2 , g1 *a) = e(g2, g1)^a",ex,e22);
-
-        BNPoint q1=g1.multiply(new BigInteger("12345"));
-        assertBool("p2 is on ec",sm9Curve.getBnCurve().contains(q1));
-
-        BNPoint q2=q1.add(g1);
-
-        BNField12 g2q1=pairing.ate(g2,q1);
-        BNField12 g2q2=pairing.ate(g2,q2);
-
-        assertEqual("e = e1*e2",g2q2,e.multiply(g2q1));
 
 //        BigInteger a0 ,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,p,sm9q;
 //        a0 =new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
