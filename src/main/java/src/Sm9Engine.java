@@ -170,19 +170,15 @@ public class Sm9Engine {
 
         DEROctetString c2_encoded = (DEROctetString) asn1Obj.getObjectAt(3);
         DEROctetString c3_encoded = (DEROctetString) asn1Obj.getObjectAt(2);
-       // DEROctetString c1t=(DEROctetString)asn1Obj.getObjectAt(4);
-
+      
         BigInteger x=c1x_encoded.getPositiveValue();
         BigInteger y=c1y_encoded.getPositiveValue();
         byte[] c2 = c2_encoded.getOctets();
         byte[] c3 = c3_encoded.getOctets();
 
-//
-//        java.security.spec.ECPoint point =new java.security.spec.ECPoint(x,y);
-//        ECPoint c1p;
+
         CurveElement c1p;
         try {
-           // c1p=kgc.getCurve1().newPoint(point);
             c1p=kgc.getCurve1().newElement();
             c1p.getX().set(x);
             c1p.getY().set(y);
@@ -193,9 +189,6 @@ public class Sm9Engine {
             throw new Exception("c1 is invalid");
         }
 
-//        Fp12 ws =new Fp12();
-//        ws.pairing(privatekey.getDe(),c1p);
-//        byte [] wb=Sm9Util.Fp12ToBytes(ws);
         Element w=kgc.pair(c1p,privatekey.getDe());
         byte [] wb=Sm9Util.GTFiniteElementToByte(w);
         byte []c1b2=c1p.toBytes();
