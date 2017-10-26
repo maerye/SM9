@@ -36,6 +36,7 @@ import iaik.security.ec.math.field.GenericFieldElement;
 import src.api.*;
 import src.field.curve.CurveElement;
 import src.field.curve.CurveField;
+import src.field.gt.GTFiniteElement;
 import src.field.gt.GTFiniteField;
 import src.field.poly.PolyModField;
 import src.field.quadratic.QuadraticField;
@@ -104,11 +105,11 @@ public class Sm9test {
         Sm9EncryptPrivateKey privateKey=kgc.generateEncrypyPrivateKey(id);
         Cipher cipher=Cipher.getInstance("SM4/ECB/NoPadding","BC");
         Sm9Engine sm9Engine=new Sm9Engine(cipher);
-        sm9Engine.initEncrypt(true,id,16,32,0);
+        sm9Engine.initEncrypt(true,id,16,32,1);
         byte [] m="0123456789abcdeffedcba9876543210".getBytes();
         byte []ciphertext=sm9Engine.processBlock(m,0,m.length);
 
-        sm9Engine.initDecrypt(false,id,privateKey,16,32,0);
+        sm9Engine.initDecrypt(false,id,privateKey,16,32,1);
         byte []mp=sm9Engine.processBlock(ciphertext,0,ciphertext.length);
         assertArrayEquals(m,mp);
     }
@@ -501,10 +502,12 @@ public class Sm9test {
 
         Element ppubs=in2.duplicate().mul(ks);
 
-        Element e=pairing.pairing(in1,ppubs);
+        GTFiniteElement e=(GTFiniteElement) pairing.pairing(in1,ppubs);
 
         System.out.println("e:"+e);
-        System.out.println("e^r:"+e.duplicate().pow(r));
+        System.out.println("e bytes:"+e.toBytes());
+        System.out.println("e^r:"+e.pow(r));
+        System.out.println("e bytes:"+new BigInteger(e.toBytes()).toString(16));
 
         BigInteger a=new BigInteger("12345");
         Element g1a=in1.duplicate().mul(a);

@@ -1,7 +1,7 @@
 package src;
 
-import iaik.security.ec.math.curve.ECPoint;
-import mcl.bn254.Ec1;
+import src.api.Element;
+import src.field.curve.CurveElement;
 
 
 /**
@@ -10,13 +10,13 @@ import mcl.bn254.Ec1;
 public class Sm9SignPrivateKey {
 
 
-    private ECPoint ds;
+    private CurveElement ds;
 
-    public Sm9SignPrivateKey(ECPoint point)
+    public Sm9SignPrivateKey(CurveElement point)
     {
         this.ds=point;
     }
-    public ECPoint getDs() {
+    public CurveElement getDs() {
         return ds;
     }
 }

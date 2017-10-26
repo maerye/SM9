@@ -210,7 +210,7 @@ public class TypeFPairing extends AbstractPairing {
     public  PolyModField getFp12(){return Fq12;}
     public PolyModField getFq4(){return Fq4;}
     public Field getFq2(){return Fq2;}
-
+    public BigInteger getR(){return r;}
     protected void initMap() {
       //  pairingMap = new TypeFTateNoDenomMillerPairingMap(this);
        pairingMap=new TypeFRatePairingMap(this);

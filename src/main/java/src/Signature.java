@@ -1,7 +1,8 @@
 package src;
 
-import iaik.security.ec.math.curve.ECPoint;
-import mcl.bn254.Ec1;
+
+import src.api.Element;
+import src.field.curve.CurveElement;
 
 import java.math.BigInteger;
 
@@ -11,9 +12,9 @@ import java.math.BigInteger;
  */
 public class Signature {
     public BigInteger h;
-    ECPoint s;
+    CurveElement s;
 
-    public Signature (BigInteger h, ECPoint s)
+    public Signature (BigInteger h, CurveElement s)
     {
         this.h=h;
         this.s=s;

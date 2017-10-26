@@ -1,17 +1,16 @@
 package src;
 
-import iaik.security.ec.math.curve.ECPoint;
-import mcl.bn254.Ec2;
+import src.field.curve.CurveElement;
 
 /**
  * Created by mzy on 2017/4/24.
  */
 public class Sm9EncryptPrivateKey {
-    private ECPoint de;
-    public Sm9EncryptPrivateKey(ECPoint de){
+    private CurveElement de;
+    public Sm9EncryptPrivateKey(CurveElement de){
         this.de=de;
     }
-    public ECPoint getDe(){
+    public CurveElement getDe(){
         return de;
     }
 }

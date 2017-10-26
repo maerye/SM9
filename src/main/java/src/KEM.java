@@ -4,6 +4,8 @@ import iaik.security.ec.math.curve.ECPoint;
 import iaik.security.ec.math.curve.EllipticCurve;
 import iaik.security.ec.math.field.GenericFieldElement;
 import mcl.bn254.*;
+import src.api.Element;
+import src.field.curve.CurveElement;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -17,7 +19,7 @@ public class KEM {
     public EncapsulatedKey encapsulate(byte [] id,long klen){
         KeyGenerationCenter kgc =KeyGenerationCenter.getInstance();
         BigInteger N=kgc.getN();
-        ECPoint g1,g2,ppube;
+        CurveElement g1,g2,ppube;
 //        Ec1 g1=kgc.getG1();
 //        Ec2 g2=kgc.getG2();
 //        Ec1 ppube=kgc.getPpube();
@@ -34,10 +36,10 @@ public class KEM {
 //        Ec1 qb=new Ec1(g1);
 //        qb.mul(new Mpz(h1.toString(10)));
 //        qb.add(ppube);
-        ECPoint qb=g1.multiplyPoint(h1).addPoint(ppube);
+        CurveElement qb=g1.duplicate().mul(h1).add(ppube);
 
         byte [] k;
-        ECPoint c;
+        CurveElement c;
         do{
             BigInteger r;
             do {
@@ -45,21 +47,19 @@ public class KEM {
 
             } while (r.compareTo(N) >= 0||r.compareTo(BigInteger.ONE)<0);
 
-//            c=new Ec1(qb);
-//            c.mul(new Mpz(r.toString(10)));
-            c=qb.multiplyPoint(r);
+            c=qb.mul(r);
 
-           //byte[]cb=Sm9Util.ec1ToBytes(c);
-            byte [] cb=Sm9Util.ECpoint1Tobytes(c);
+          //  byte [] cb=Sm9Util.ECpoint1Tobytes(c);
+            byte [] cb=c.toBytes();
 
 //            Fp12 g=new Fp12();
 //            g.pairing(g2,ppube);
 //            Fp12 w=new Fp12(g);
 //            w.power(new Mpz(r.toString(10)));
 //            byte [] wb=Sm9Util.Fp12ToBytes(w);
-            GenericFieldElement g=kgc.pair(ppube,g2);
-            GenericFieldElement w=g.exponentiate(r);
-            byte [] wb=Sm9Util.GtElementToBytes(w);
+            Element g=kgc.pair(ppube,g2);
+            Element w=g.pow(r);
+            byte [] wb=Sm9Util.GTFiniteElementToByte(w);
 
             byte [] merge1=Sm9Util.byteMerger(cb,wb);
             byte [] merge2=Sm9Util.byteMerger(merge1,id);
@@ -70,10 +70,11 @@ public class KEM {
         return new EncapsulatedKey(k,c);
 
     }
-    public byte[] decapsulate(ECPoint c,byte [] id,Sm9EncryptPrivateKey de,long klen) throws Exception{
+    public byte[] decapsulate(CurveElement c,byte [] id,Sm9EncryptPrivateKey de,long klen) throws Exception{
         KeyGenerationCenter kgc=KeyGenerationCenter.getInstance();
-        EllipticCurve curve1=kgc.getCurve1();
-        if(!curve1.containsPoint(c.toJDKECPoint()))
+        //EllipticCurve curve1=kgc.getCurve1();
+       // if(!curve1.containsPoint(c.toJDKECPoint()))
+        if(!c.isValid())
         {
             throw new Exception("invalid content");
         }
@@ -82,10 +83,10 @@ public class KEM {
 //        w.pairing(de.getDe(),ec1);
 //        byte [] wb=Sm9Util.Fp12ToBytes(w);
 //        byte [] cb=Sm9Util.ec1ToBytes(ec1);
-        GenericFieldElement w=kgc.pair(c,de.getDe());
-        byte [] wb=Sm9Util.GtElementToBytes(w);
-        byte [] cb=Sm9Util.ECpoint1Tobytes(c);
-
+        Element w=kgc.pair(c,de.getDe());
+        byte [] wb=Sm9Util.GTFiniteElementToByte(w);
+       // byte [] cb=Sm9Util.ECpoint1Tobytes(c);
+        byte [] cb=c.toBytes();
         byte [] merge1=Sm9Util.byteMerger(cb,wb);
         byte [] merge2=Sm9Util.byteMerger(merge1,id);
         byte [] k=Sm9Util.KDF(merge2,klen);

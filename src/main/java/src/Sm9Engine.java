@@ -6,6 +6,8 @@ import mcl.bn254.*;
 import org.bouncycastle.asn1.*;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.DataLengthException;
+import src.api.Element;
+import src.field.curve.CurveElement;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -77,13 +79,8 @@ public class Sm9Engine {
     private byte [] processEncrypt(byte []block,KeyGenerationCenter kgc) throws  Exception{
         byte hid = kgc.hid2;
         BigInteger N = kgc.getN();
-//        Ec1 g1 = kgc.getG1();
-//        Ec2 g2=kgc.getG2();
-//        Ec1 ppube = kgc.getPpube();
-//        Ec1 qb = new Ec1(g1);
-//        Ec1 c1;
 
-        ECPoint g1,g2,ppube,qb,c1;
+        CurveElement g1,g2,ppube,qb,c1;
         byte [] k1,k2,c2,c1b,wb1;
 
         g1=kgc.getG1();
@@ -96,9 +93,7 @@ public class Sm9Engine {
         merge[idb.length]=hid;
         BigInteger h1=Sm9Util.h1(merge,N);
 
-//        qb.mul(new Mpz(h1.toString(10)));
-//        qb.add(ppube);
-        qb=g1.multiplyPoint(h1).addPoint(ppube);
+        qb=g1.duplicate().mul(h1).add(ppube);
 
         do {
             BigInteger r;
@@ -106,20 +101,11 @@ public class Sm9Engine {
                 r=new BigInteger(N.bitLength(),new SecureRandom());
             }while(r.compareTo(N)>=0||r.compareTo(BigInteger.ONE)<0);
 
-//            c1=new Ec1(qb);
-//            c1.mul(new Mpz(r.toString(10)));
-//
-//            c1b=Sm9Util.ec1ToBytes(c1);
-//            Fp12 g=new Fp12();
-//            g.pairing(g2,ppube);
-//            Fp12 w=new Fp12(g);
-//            w.power(new Mpz(r.toString(10)));
-//            byte[] wb1=Sm9Util.Fp12ToBytes(w);
-            c1=qb.multiplyPoint(r);
-            c1b=Sm9Util.ECpoint1Tobytes(c1);
-            GenericFieldElement g=kgc.pair(ppube,g2);
-            GenericFieldElement w=g.exponentiate(r);
-            wb1=Sm9Util.GtElementToBytes(w);
+            c1=qb.duplicate().mul(r);
+            c1b=c1.toBytes();
+            Element g=kgc.pair(ppube,g2);
+            Element w=g.pow(r);
+            wb1=Sm9Util.GTFiniteElementToByte(w);
 
             if(type==0){
                 int klen =block.length*8+k2len*8;
@@ -153,15 +139,10 @@ public class Sm9Engine {
 
         byte[] c3=Sm9Util.MAC(k2,c2);
 
-//        BigInteger Bx=new BigInteger(c1.getX().toString(),10);
-//        BigInteger By=new BigInteger(c1.getY().toString(),10);
-//
-//        byte [] c1x=Sm9Util.bigIntegerTobytes(Bx);
-//        byte [] c1y= Sm9Util.bigIntegerTobytes(By);
-//        byte [] c1t=c1.toString().getBytes();
-        byte []c1x=c1.scalePoint().getCoordinate().getX().toByteArray();
-        byte []c1y=c1.scalePoint().getCoordinate().getY().toByteArray();
-
+//        byte []c1x=c1.scalePoint().getCoordinate().getX().toByteArray();
+//        byte []c1y=c1.scalePoint().getCoordinate().getY().toByteArray();
+        byte []c1x=c1.getX().toBytes();
+        byte [] c1y=c1.getY().toBytes();
         ASN1Sequence seq=null;
         ASN1EncodableVector v=new ASN1EncodableVector();
         v.add(new ASN1Integer(c1x));
@@ -196,22 +177,17 @@ public class Sm9Engine {
         byte[] c2 = c2_encoded.getOctets();
         byte[] c3 = c3_encoded.getOctets();
 
-//        byte[] c1s= c1t.getOctets();
-//        String c1string=new String(c1s);
-//        String [] sp=c1string.split("_");
-//        String p1=sp[0];
-//        String p2=sp[1];
-//        Ec1 c1p =new Ec1();
-//        c1p.set(c1string);
 //
-//        byte[] xb=Sm9Util.bigIntegerTobytes(x);
-//        byte[] yb=Sm9Util.bigIntegerTobytes(y);
-//        byte[] c1b2=Sm9Util.byteMerger(xb,yb);
-//
-        java.security.spec.ECPoint point =new java.security.spec.ECPoint(x,y);
-        ECPoint c1p;
+//        java.security.spec.ECPoint point =new java.security.spec.ECPoint(x,y);
+//        ECPoint c1p;
+        CurveElement c1p;
         try {
-            c1p=kgc.getCurve1().newPoint(point);
+           // c1p=kgc.getCurve1().newPoint(point);
+            c1p=kgc.getCurve1().newElement();
+            c1p.getX().set(x);
+            c1p.getY().set(y);
+            c1p.setInfFlag(0);
+
         }catch (Exception e)
         {
             throw new Exception("c1 is invalid");
@@ -220,9 +196,9 @@ public class Sm9Engine {
 //        Fp12 ws =new Fp12();
 //        ws.pairing(privatekey.getDe(),c1p);
 //        byte [] wb=Sm9Util.Fp12ToBytes(ws);
-        GenericFieldElement w=kgc.pair(c1p,privatekey.getDe());
-        byte [] wb=Sm9Util.GtElementToBytes(w);
-        byte []c1b2=Sm9Util.ECpoint1Tobytes(c1p);
+        Element w=kgc.pair(c1p,privatekey.getDe());
+        byte [] wb=Sm9Util.GTFiniteElementToByte(w);
+        byte []c1b2=c1p.toBytes();
 
         byte [] k2,m;
         if(type==0){

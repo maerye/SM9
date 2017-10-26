@@ -7,6 +7,10 @@ import mcl.bn254.Fp;
 import mcl.bn254.Fp12;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SM3Digest;
+import src.api.Element;
+import src.api.Point;
+import src.api.Polynomial;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.regex.Pattern;
@@ -123,10 +127,39 @@ public class Sm9Util {
         return buffer.array();
 
     }*/
-
-    public static byte[] GtElementToBytes(GenericFieldElement gt){
+//    public static byte [] GTFiniteElementToByte(Polynomial e){
+//        Polynomial r0,r1,r2;
+//        Point a0,a1,a2,a3,a4,a5;
+//        byte [] result=new byte[BIGINTEGER_LENGTH*12];
+//
+//        r2=(Polynomial) e.getCoefficient(2);
+//        r1=(Polynomial)e.getCoefficient(1);
+//        r0=(Polynomial)e.getCoefficient(0);
+//
+//        a5=(Point) r2.getCoefficient(1);
+//        a4=(Point)r2.getCoefficient(0);
+//        a3=(Point) r1.getCoefficient(1);
+//        a2=(Point)r1.getCoefficient(0);
+//        a1=(Point) r0.getCoefficient(1);
+//        a0=(Point)r0.getCoefficient(0);
+//        ByteBuffer buffer=ByteBuffer.allocate(BIGINTEGER_LENGTH*12);
+//        buffer.put(a5.getY().toBytes());
+//        buffer.put(a5.getX().toBytes());
+//        buffer.put(a4.getY().toBytes());
+//        buffer.put(a4.getX().toBytes());
+//        buffer.put(a3.getY().toBytes());
+//        buffer.put(a3.getX().toBytes());
+//        buffer.put(a2.getY().toBytes());
+//        buffer.put(a2.getX().toBytes());
+//        buffer.put(a1.getY().toBytes());
+//        buffer.put(a1.getX().toBytes());
+//        buffer.put(a0.getY().toBytes());
+//        buffer.put(a0.getX().toBytes());
+//        return buffer.array();
+//    }
+    public static byte[] GTFiniteElementToByte(Element gt){
         byte [] result=new byte[BIGINTEGER_LENGTH*12];
-        byte [] source=gt.toByteArray();
+        byte [] source=gt.toBytes();
         for(int i=11;i>=0;i--)
         {
             System.arraycopy(source,i*32,result,(11-i)*32,32);

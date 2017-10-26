@@ -41,7 +41,7 @@ public class TypeFRatePairingMap extends AbstractPairingMap{
                 t.add(Q);
             }
         }
-        System.out.println("miller step :"+f);
+
 
         Point Q11=fobasmiracl(Q);
         Point Q22=fobasmiracl(Q11);

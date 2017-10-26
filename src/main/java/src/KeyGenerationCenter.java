@@ -1,11 +1,15 @@
 package src;
 
-import iaik.security.ec.math.curve.*;
-import iaik.security.ec.math.field.GenericField;
 
-import iaik.security.ec.math.field.GenericFieldElement;
-import mcl.bn254.*;
-
+import src.api.Element;
+import src.api.PairingParameters;
+import src.api.PairingParametersGenerator;
+import src.api.Point;
+import src.field.curve.CurveElement;
+import src.field.curve.CurveField;
+import src.field.gt.GTFiniteField;
+import src.pairing.f.TypeFCurveGenerator;
+import src.pairing.f.TypeFPairing;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -14,26 +18,24 @@ import java.security.SecureRandom;
  * Created by mzy on 2017/4/17.
  */
 public class KeyGenerationCenter {
-    static {
-        System.loadLibrary("bn254_if_wrap");
-        BN254.SystemInit();
-    }
+
 
     private static int size =256;
 
     private BigInteger ks; //master sign private key
     private BigInteger ke;//master encrypt private key
-//    public Ec2 ppubs; //master sign public key
-//    public Ec1 ppube; //master encrypt public key
 
     public byte hid=0x01;
     public byte hid2=0x02;
 
-//    public Ec1 g1;
-//    public Ec2 g2;
-    private ECPoint g1,g2,ppubs,ppube;
-    private EllipticCurve curve1,curve2;
-    private final Pairing pairing2;
+//    private ECPoint g1,g2,ppubs,ppube;
+//    private EllipticCurve curve1,curve2;
+//    private final Pairing pairing2;
+    private CurveElement g1,g2,ppubs,ppube;
+    private CurveField curve1,curve2;
+    private GTFiniteField gt;
+    private TypeFPairing pairing;
+
     private SecureRandom random;
     private SecureRandom random2;
 
@@ -45,26 +47,51 @@ public class KeyGenerationCenter {
     public KeyGenerationCenter(){
 
 
-//        Fp aa = new Fp("12723517038133731887338407189719511622662176727675373276651903807414909099441");
-//        Fp ab = new Fp("4168783608814932154536427934509895782246573715297911553964171371032945126671");
-//        Fp ba = new Fp("13891744915211034074451795021214165905772212241412891944830863846330766296736");
-//        Fp bb = new Fp("7937318970632701341203597196594272556916396164729705624521405069090520231616");
-//        g1 = new Ec1(new Fp(-1), new Fp(1));
-//        g2 = new Ec2(new Fp2(aa, ab), new Fp2(ba, bb));
+//        this.pairing2 = AtePairingOverBarretoNaehrigCurveFactory
+//                .getPairing(PairingTypes.TYPE_2, size);
 //
-//        Mpz r=BN254.GetParamR();
-//        this.N=new BigInteger(r.toString(),10);
+//        this.curve1 = pairing2.getGroup1();
+//        this.curve2 = pairing2.getGroup2();
+//
+//
+//        this.g1=curve1.getGenerator();
+//        this.g2=curve2.getGenerator();
+//        this.N=curve1.getOrder();
+        BigInteger g1x=new BigInteger("93DE051D62BF718FF5ED0704487D01D6E1E4086909DC3280E8C4E4817C66DDDD",16);
+        BigInteger g1y=new BigInteger("21FE8DDA4F21E607631065125C395BBC1C1C00CBFA6024350C464CD70A3EA616",16);
 
-        this.pairing2 = AtePairingOverBarretoNaehrigCurveFactory
-                .getPairing(PairingTypes.TYPE_2, size);
+        BigInteger xp21=new BigInteger("3722755292130B08D2AAB97FD34EC120EE265948D19C17ABF9B7213BAF82D65B",16);
+        BigInteger xp22=new BigInteger("85AEF3D078640C98597B6027B441A01FF1DD2C190F5E93C454806C11D8806141",16);
+        BigInteger yp21=new BigInteger("A7CF28D519BE3DA65F3170153D278FF247EFBA98A71A08116215BBA5C999A7C7",16);
+        BigInteger yp22=new BigInteger("17509B092E845C1266BA0D262CBEE6ED0736A96FA347C8BD856DC76B84EBEB96",16);
 
-        this.curve1 = pairing2.getGroup1();
-        this.curve2 = pairing2.getGroup2();
+        int rBits=256;
+        PairingParametersGenerator pairingParametersGenerator=new TypeFCurveGenerator(rBits);
+        PairingParameters parameters=pairingParametersGenerator.generate();
 
+        this.pairing=new TypeFPairing(parameters);
 
-        this.g1=curve1.getGenerator();
-        this.g2=curve2.getGenerator();
-        this.N=curve1.getOrder();
+        this.curve1=(CurveField) pairing.getG1();
+        this.curve2=(CurveField)pairing.getG2();
+        this.gt=(GTFiniteField)pairing.getGT();
+        g1=curve1.newElement();
+        g1.getX().set(g1x);
+        g1.getY().set(g1y);
+        g1.setInfFlag(0);
+
+        g2=curve2.newElement();
+        Point g2x=(Point) g2.getX().getField().newElement();
+        Point g2y=(Point) g2.getX().getField().newElement();
+
+        g2x.getX().set(xp21);
+        g2x.getY().set(xp22);
+        g2y.getX().set(yp21);
+        g2y.getY().set(yp22);
+        g2.getX().set(g2x);
+        g2.getY().set(g2y);
+        g2.setInfFlag(0);
+        this.N=pairing.getR();
+
 
         this.random=new SecureRandom();
         this.random2=new SecureRandom();
@@ -86,20 +113,8 @@ public class KeyGenerationCenter {
         this.ks = temp;
         this.ke =temp2;
 
-        //ppubs=ks * g2
-
-//        Ec2 ec2ppubs=new Ec2(g2);
-//        Mpz ksmpz=new Mpz(ks.toString(10));
-//        ec2ppubs.mul(ksmpz);
-//        this.ppubs=new Ec2(ec2ppubs);
-
-        this.ppubs=g2.multiplyPoint(ks);
-
-        //ppube=ke * g1
-//        Ec1 ec1ppube=new Ec1(g1);
-//        ec1ppube.mul(new Mpz(ke.toString(10)));
-//        this.ppube=ec1ppube;
-        this.ppube=g1.multiplyPoint(ke);
+        this.ppubs=g2.duplicate().mul(ks);
+        this.ppube=g1.duplicate().mul(ke);
     }
 
     public static KeyGenerationCenter getInstance()
@@ -132,7 +147,7 @@ public class KeyGenerationCenter {
 //        Ec1 ds =new Ec1(g1);
 //        Mpz t2mpz=new Mpz(t2.toString(10));
 //        ds.mul(t2mpz);
-        ECPoint ds=g1.multiplyPoint(t2);
+        CurveElement ds=g1.duplicate().mul(t2);
 
         return new Sm9SignPrivateKey(ds);
     }
@@ -156,15 +171,15 @@ public class KeyGenerationCenter {
 //        Ec2 de=new Ec2(g2);
 //        de.mul(new Mpz(t2.toString(10)));
 
-        ECPoint de=g2.multiplyPoint(t2);
+        CurveElement de=g2.duplicate().mul(t2);
         return new Sm9EncryptPrivateKey(de);
     }
-    public GenericFieldElement pair(ECPoint p1,ECPoint p2){ return pairing2.pair(p1,p2);}
-    public ECPoint getPpubs(){return this.ppubs ;}
-    public ECPoint getPpube(){return this.ppube;}
-    public ECPoint getG1 (){return this.g1;}
-    public ECPoint getG2 () {return this.g2;}
+    public Element pair(CurveElement p1,CurveElement p2){ return pairing.pairing(p1,p2);}
+    public CurveElement getPpubs(){return this.ppubs ;}
+    public CurveElement getPpube(){return this.ppube;}
+    public CurveElement getG1 (){return this.g1;}
+    public CurveElement getG2 () {return this.g2;}
     public BigInteger getN(){return this.N;}
-    public EllipticCurve getCurve1(){return this.curve1;}
-    public EllipticCurve getCurve2(){return this.curve2;}
+    public CurveField getCurve1(){return this.curve1;}
+    public CurveField getCurve2(){return this.curve2;}
 }
