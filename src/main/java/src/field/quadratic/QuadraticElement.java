@@ -278,7 +278,11 @@ public class QuadraticElement<E extends Element> extends AbstractPointElement<E,
 
 
     public String toString() {
-        return String.format("{x=%s,y=%s}", x, y);
+        BigInteger xb=new BigInteger(x.toString());
+        BigInteger yb=new BigInteger(y.toString());
+
+        return String.format("{x=%s,y=%s}",xb.toString(16), yb.toString(16));
+       // return String.format("{x=%s,y=%s}",x, y);
     }
 
 }

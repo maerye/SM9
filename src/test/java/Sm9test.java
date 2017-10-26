@@ -427,6 +427,7 @@ public class Sm9test {
         BigInteger xa=new BigInteger("A5702F05CF1315305E2D6EB64B0DEB923DB1A0BCF0CAFF90523AC8754AA69820",16);
         BigInteger xb=new BigInteger("78559A844411F9825C109F5EE3F52D720DD01785392A727BB1556952B2B013D3",16);
 
+        BigInteger ppubsx1=new BigInteger("29DBA116152D1F786CE843ED24A3B573414D2177386A92DD8F14D65696EA5E32",16);
         BigInteger g0=new BigInteger("AAB9F06A4EEBA4323A7833DB202E4E35639D93FA3305AF73F0F071D7D284FCFB",16);
         BigInteger g1=new BigInteger("84B87422330D7936EABA1109FA5A7A7181EE16F2438B0AEB2F38FD5F7554E57A",16);
         BigInteger g2=new BigInteger("4C744E69C4A2E1C8ED72F796D151A17CE2325B943260FC460B9F73CB57C9014B",16);
@@ -460,6 +461,8 @@ public class Sm9test {
 //        Field Fq = new ZrField(random, q);
 //        Field Fq2 = new QuadraticField(random, Fq);
 
+        BigInteger test=new BigInteger("15376082189538387440900211051596494061397537732182077032922339670147106514454",10);
+        System.out.println("test: "+test.toString(16));
         String xbits=xp.toString(2);
         String[] sarray=xbits.split("");
         System.out.println(sarray.length);
@@ -474,194 +477,43 @@ public class Sm9test {
         CurveField G1=(CurveField) pairing.getG1();
         CurveField G2=(CurveField)pairing.getG2();
         GTFiniteField GT=(GTFiniteField)pairing.getGT();
-        Field Fq2=pairing.getFq2();
-        Point beta=(Point) Fq2.newElement();
-        beta.getX().set(0);
-        beta.getY().set(1);
-        Element tt=beta.duplicate();
-        tt.invert();
-
-        Element mul=tt.mul(beta);
-
-        Polynomial g12=(Polynomial) pairing.getFp12().newElement();
-        Polynomial g12sextic=pairing.getFq12sextic().newElement();
-
-        Polynomial tempFq4=(Polynomial)pairing.getFq4().newElement();
-
-        Point temp = (Point) G2.getTargetField().newElement();
-        temp.getX().set(g0);
-        temp.getY().set(g1);
-        tempFq4.getCoefficient(0).set(temp);
-        g12sextic.getCoefficient(0).set(temp);
-
-        temp.getX().set(g2);
-        temp.getY().set(g3);
-        tempFq4.getCoefficient(1).set(temp);
-        g12sextic.getCoefficient(1).set(temp);
-        g12.getCoefficient(0).set(tempFq4);
-
-        temp.getX().set(g4);
-        temp.getY().set(g5);
-        g12sextic.getCoefficient(2).set(temp);
-        tempFq4.getCoefficient(0).set(temp);
-        temp.getX().set(g6);
-        temp.getY().set(g7);
-        g12sextic.getCoefficient(3).set(temp);
-        tempFq4.getCoefficient(1).set(temp);
-
-        g12.getCoefficient(1).set(tempFq4);
-
-        temp.getX().set(g8);
-        temp.getY().set(g9);
-        g12sextic.getCoefficient(4).set(temp);
-        tempFq4.getCoefficient(0).set(temp);
-        temp.getX().set(g10);
-        temp.getY().set(g11);
-        g12sextic.getCoefficient(5).set(temp);
-        tempFq4.getCoefficient(1).set(temp);
-        g12.getCoefficient(2).set(tempFq4);
-
-        for(int i=0;i<3;i++)
-        {
-            for(int j=0;j<2;j++)
-            {
-                ((Polynomial)g12.getCoefficient(i)).getCoefficient(j).mul(temp.set(1));
-            }
-        }
-
-
-
-        System.out.println("g12:"+g12);
-        System.out.println("g12 ^ r:"+g12.duplicate().pow(r));
-        System.out.println("g12sextic:"+g12sextic);
-        System.out.println("g12sextic ^ r:"+g12sextic.duplicate().pow(r));
-
-        System.out.println("g12r1 :"+g12r1);
-        System.out.println("g12r2 :"+g12r2);
-        System.out.println("g12r3 :"+g12r3);
-        System.out.println("g12r4 :"+g12r4);
-        System.out.println("g12r5 :"+g12r5);
-        System.out.println("g12r6 :"+g12r6);
-        System.out.println("g12r7 :"+g12r7);
-        System.out.println("g12r8 :"+g12r8);
-        System.out.println("g12r9 :"+g12r9);
-        System.out.println("g12r10 :"+g12r10);
-        System.out.println("g12r11 :"+g12r11);
-        System.out.println("g12r12 :"+g12r12);
 
 
         CurveElement in1=G1.newElement();
         in1.getX().set(xp);
         in1.getY().set(yp);
         in1.setInfFlag(0);
-//        CurveElement p=G1.newElement();
-//        p.getX().set(xp);
-//        p.setPointFromX();
         System.out.println("g1 : "+in1);
 
-        Point in2x=(Point) Fq2.newElement();
-        Point in2y=(Point) Fq2.newElement();
+        CurveElement in2=G2.newElement();
+        Point in2x=(Point) in2.getX().getField().newElement();
+        Point in2y=(Point) in2.getX().getField().newElement();
 
         in2x.getX().set(xp21);
         in2x.getY().set(xp22);
         in2y.getX().set(yp21);
         in2y.getY().set(yp22);
 
-        CurveElement in2=G2.newElement();
         in2.getX().set(in2x);
         in2.getY().set(in2y);
         in2.setInfFlag(0);
 
 
-        System.out.println("g1 is valid : "+in1.isValid());
-        System.out.println("g1 is generator :"+in1.duplicate().mul(G1.getOrder()).isZero());
-        System.out.println(xp);
-        System.out.println(yp);
-        System.out.println(in1);
-        System.out.println("g1 *t2 :"+in1.duplicate().mul(t2));
-        System.out.println("g1 *t2 x :"+xa);
-        System.out.println("g1 *t2 y:"+xb);
-
-        System.out.println(xp21);
-        System.out.println(xp22);
-        System.out.println(yp21);
-        System.out.println(yp22);
-        System.out.println(in2);
-        System.out.println(a1);
-        System.out.println(a2);
-        System.out.println(a3);
-        System.out.println(a4);
-
-        System.out.println(in2.duplicate().mul(ks));
         Element ppubs=in2.duplicate().mul(ks);
-
-        System.out.println("g2 is valid :"+in2.isValid());
-
-        System.out.println("g2 is generator :"+in2.duplicate().mul(G2.getOrder()).isZero());
 
         Element e=pairing.pairing(in1,ppubs);
 
         System.out.println("e:"+e);
-        System.out.println("g0:"+g0);
+        System.out.println("e^r:"+e.duplicate().pow(r));
 
         BigInteger a=new BigInteger("12345");
         Element g1a=in1.duplicate().mul(a);
         Element ea=pairing.pairing(g1a,ppubs);
 
-        //assertEquals(e.pow(a),ea);
-
         System.out.println( "e^a:"+e.pow(a));
         System.out.println("pair ea"+ea);
 
 
-
-//        BigInteger order1=G1.getOrder();
-//        BigInteger order2=G2.getOrder();
-//        BigInteger orderT= GT.getOrder();
-//
-//        Element in1=G1.newRandomElement();
-//        Element in2;
-//        in2 = G2.newRandomElement();
-//
-//
-//        Element inT=GT.newRandomElement();
-//        System.out.println(in1.toString());
-//        System.out.println(order1);
-//        System.out.println(in1.mul(order1));
-//        if(in1.mul(order1).isZero())
-//        {
-//            System.out.println("in1 is gen ");
-//        }
-//        System.out.println(in2.toString());
-//        System.out.println(in2.mul(order1));
-//        if(in2.mul(order2).isZero())
-//        {
-//
-//            System.out.println(in2.toString()+"in2 is gen ");
-//        }
-//        System.out.println(inT.toString());
-//        System.out.println(inT.mul(order1));
-//
-//        if (inT.pow(orderT).isOne())
-//        {
-//            System.out.println("inT is gen");
-//        }
-//        if(order1.equals(order2))
-//        {
-//            System.out.println("g1 g2 order is equal");
-//        }
-//        if(order1.equals(orderT))
-//        {
-//            System.out.println("g1 gt order is equal");
-//        }
-//        if(G1.isOrderOdd())
-//        {
-//            System.out.println("g1 order  odd");
-//        }
-//        if(G2.isOrderOdd())
-//        {
-//            System.out.println("g1 order  odd");
-//        }
 
     }
 

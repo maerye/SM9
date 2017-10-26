@@ -38,7 +38,7 @@ public class TypeFPairing extends AbstractPairing {
     protected Field Fq, Fq2x;
     protected Field Fq2;
     protected Field Fq4x;
-    protected PolyModField Fq4,Fq12,Fq12sextic;
+    protected PolyModField Fq4,Fq12;
     protected CurveField Eq, etwist;
 
 
@@ -106,7 +106,7 @@ public class TypeFPairing extends AbstractPairing {
         irreduciblePolyCoeff.add(Fq2.newOneElement());
 
         // init Fq12
-        Fq12sextic = initPolyMod(irreduciblePoly);
+       // Fq12 = initPolyMod(irreduciblePoly);
 
         PolyElement irreduciblePoly2 = (PolyElement) Fq2x.newElement();
         List<Element> irreduciblePolyCoeff2 = irreduciblePoly2.getCoefficients();
@@ -156,7 +156,7 @@ public class TypeFPairing extends AbstractPairing {
         */
         tateExp = q.multiply(q).subtract(BigInteger.ONE).multiply(q).multiply(q).add(BigInteger.ONE).divide(r);
 
-        PolyModElement polyModElement = Fq12sextic.newElement();
+        PolyModElement polyModElement = Fq12.newElement();
         polyModElement.getCoefficient(1).setToOne();
         polyModElement.pow(q);
         polyModElement.pow(q);
@@ -208,12 +208,13 @@ public class TypeFPairing extends AbstractPairing {
     }
 
     public  PolyModField getFp12(){return Fq12;}
-    public  PolyModField getFq12sextic(){return Fq12sextic;}
     public PolyModField getFq4(){return Fq4;}
     public Field getFq2(){return Fq2;}
 
     protected void initMap() {
-        //pairingMap = new TypeFTateNoDenomMillerPairingMap(this);
-        pairingMap=new TypeFRatePairingMap(this);
+      //  pairingMap = new TypeFTateNoDenomMillerPairingMap(this);
+       pairingMap=new TypeFRatePairingMap(this);
     }
+
+
 }
